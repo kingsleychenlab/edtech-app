@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revizely.ai | Study. Organise. Achieve.</title>
+  <meta name="description" content="Revizely.ai is an all-in-one AI study workspace for notes, flashcards, past papers, progress tracking and focused revision." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] },
+          boxShadow: {
+            soft: "0 24px 70px rgba(73, 72, 145, 0.14)",
+            glass: "0 18px 55px rgba(55, 48, 128, 0.14), 0 2px 10px rgba(10, 10, 20, 0.06)"
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="global.css" />
+</head>
+<body class="bg-white font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-2xl transition-shadow duration-300">
+    <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-7 lg:px-8" aria-label="Primary navigation">
+      <a href="#top" class="group flex items-center gap-3 font-extrabold tracking-tight text-slate-950" aria-label="Revizely.ai home">
+        <img class="brand-logo" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+        <span class="text-lg">Revizely.ai</span>
+      </a>
+
+      <div class="hidden items-center gap-3 md:flex">
+        <a href="public/login.html" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Log in</a>
+        <a href="public/signup.html" class="magnetic-btn rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-slate-800">Get Started</a>
+      </div>
+
+      <button id="menuButton" class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm md:hidden" aria-label="Open menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-slate-100 bg-white/96 px-5 py-4 shadow-xl shadow-slate-950/5 md:hidden">
+      <div class="mx-auto flex max-w-7xl flex-col gap-2">
+        <a class="mobile-link" href="public/login.html">Log in</a>
+        <a class="mt-2 rounded-xl bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white" href="public/signup.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="px-3 pt-24 sm:px-5 lg:px-6">
+      <div id="heroStage" class="hero-stage relative mx-auto min-h-[680px] max-w-[1500px] overflow-hidden rounded-[28px] px-5 pb-7 pt-14 sm:px-8 lg:min-h-[660px] lg:px-12">
+        <canvas id="studyScene" class="absolute inset-0 z-0 h-full w-full"></canvas>
+        <div id="heroAura" class="pointer-events-none absolute inset-0 z-[1]"></div>
+        <div class="hero-ring hero-ring-one"></div>
+        <div class="hero-ring hero-ring-two"></div>
+        <div class="hero-orb hero-orb-one"></div>
+        <div class="hero-orb hero-orb-two"></div>
+
+        <div class="relative z-10 mx-auto flex max-w-6xl flex-col items-center text-center">
+          <div class="reveal inline-flex items-center gap-2 rounded-full border border-white/75 bg-white/60 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur-xl">
+            <svg class="h-4 w-4 text-indigo-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 1.7l1.7 5.1h5.4l-4.4 3.1 1.7 5.1-4.4-3.2L5.6 15l1.7-5.1-4.4-3.1h5.4L10 1.7Z"/></svg>
+            All-in-one AI study companion
+          </div>
+
+          <h1 class="reveal mt-6 max-w-5xl text-balance text-5xl font-black leading-[0.98] tracking-[-0.045em] text-slate-950 sm:text-6xl lg:text-7xl">
+            Study. Organise.<br />
+            <span class="animated-gradient-text">Achieve.</span>
+          </h1>
+
+          <p class="reveal mt-6 max-w-2xl text-pretty text-base font-medium leading-8 text-slate-700 sm:text-lg">
+            Everything you need to revise smarter: exam notes, flashcards, past papers, AI questions and progress tracking in one calm workspace.
+          </p>
+
+          <div class="reveal mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a href="public/signup.html" class="magnetic-btn group inline-flex min-h-14 items-center justify-center gap-3 rounded-2xl bg-slate-950 px-7 text-base font-bold text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800">
+              Get Started for Free
+              <svg class="h-5 w-5 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="#features" class="inline-flex min-h-14 items-center justify-center rounded-2xl border border-white/70 bg-white/55 px-6 text-base font-bold text-slate-800 shadow-sm backdrop-blur-xl transition hover:bg-white/85">
+              Explore tools
+            </a>
+          </div>
+
+          <div class="hero-dashboard reveal mt-8 hidden w-full max-w-5xl grid-cols-1 items-start gap-4 sm:grid md:grid-cols-[0.8fr_1.25fr_0.95fr]">
+            <article class="tilt-card glass-card order-2 p-4 text-left md:order-1 md:mt-8">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-bold text-slate-500">Study Time</p>
+                <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+              </div>
+              <p class="mt-4 text-4xl font-black tracking-[-0.06em] text-slate-950"><span data-count="24.5">0</span>h</p>
+              <div class="mt-4 flex items-center gap-2 text-sm font-bold text-emerald-600">
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 14 7.3 9.7l3 3L17 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                +12% this week
+              </div>
+              <div class="mt-5 flex h-10 items-end gap-2">
+                <span class="bar h-[42%]"></span><span class="bar h-[64%]"></span><span class="bar h-[48%]"></span><span class="bar h-[78%]"></span><span class="bar active h-full"></span>
+              </div>
+            </article>
+
+            <article class="tilt-card glass-card order-1 p-4 text-left md:order-2">
+              <div class="mb-4 flex items-center justify-between">
+                <p class="text-sm font-black text-slate-950">Today's Focus</p>
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">GCSE</span>
+              </div>
+              <button class="focus-row" type="button">
+                <span class="focus-icon bg-emerald-100 text-emerald-600"><svg viewBox="0 0 24 24" fill="none"><path d="M5 5h14v14H5z" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                <span class="min-w-0 flex-1"><span class="block truncate text-sm font-bold text-slate-900">Biology flashcards</span><span class="text-xs font-semibold text-slate-400">Review 42 cards</span></span>
+                <span class="check-dot"></span>
+              </button>
+              <button class="focus-row" type="button">
+                <span class="focus-icon bg-blue-100 text-blue-600"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l4 4v14H7z" stroke="currentColor" stroke-width="2"/><path d="M14 3v5h5M10 13h6M10 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                <span class="min-w-0 flex-1"><span class="block truncate text-sm font-bold text-slate-900">Chemistry past paper</span><span class="text-xs font-semibold text-slate-400">Timed practice</span></span>
+                <span class="check-dot"></span>
+              </button>
+              <button class="focus-row" type="button">
+                <span class="focus-icon bg-violet-100 text-violet-600"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4h12v16H6z" stroke="currentColor" stroke-width="2"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+                <span class="min-w-0 flex-1"><span class="block truncate text-sm font-bold text-slate-900">Maths notes</span><span class="text-xs font-semibold text-slate-400">Condense topic</span></span>
+                <span class="check-dot"></span>
+              </button>
+            </article>
+
+            <article class="tilt-card glass-card order-3 p-4 text-left md:mt-7">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-black text-slate-950">Progress</p>
+                <button class="inline-flex items-center gap-1 text-xs font-bold text-slate-500">This Week <svg class="h-3 w-3" viewBox="0 0 16 16" fill="none"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+              </div>
+              <div class="mt-4 h-24">
+                <svg class="h-full w-full overflow-visible" viewBox="0 0 240 112" fill="none" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M7 93C31 84 38 86 57 68C75 51 87 62 105 48C124 32 135 38 153 30C172 22 186 11 207 18C221 23 228 12 235 6V106H7V93Z" fill="url(#progressFill)" opacity=".75"/>
+                  <path id="progressPath" d="M7 93C31 84 38 86 57 68C75 51 87 62 105 48C124 32 135 38 153 30C172 22 186 11 207 18C221 23 228 12 235 6" stroke="#7c3aed" stroke-width="4" stroke-linecap="round"/>
+                  <circle cx="57" cy="68" r="5" fill="white" stroke="#7c3aed" stroke-width="3"/>
+                  <circle cx="153" cy="30" r="5" fill="white" stroke="#7c3aed" stroke-width="3"/>
+                  <circle cx="235" cy="6" r="6" fill="#7c3aed"/>
+                  <defs><linearGradient id="progressFill" x1="121" y1="6" x2="121" y2="106" gradientUnits="userSpaceOnUse"><stop stop-color="#8b5cf6" stop-opacity=".36"/><stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/></linearGradient></defs>
+                </svg>
+              </div>
+              <p class="mt-3 flex items-center gap-2 text-sm font-bold text-slate-600"><span class="text-indigo-600">Up 18%</span> from last week</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="mx-auto max-w-7xl px-5 pb-16 pt-14 sm:px-7 sm:pt-18 lg:px-8 lg:pb-24 lg:pt-20">
+      <div class="reveal mx-auto max-w-3xl text-center">
+        <p class="eyebrow">Tools built for students</p>
+        <h2 class="mt-3 text-balance text-4xl font-black leading-tight tracking-[-0.035em] text-slate-950 sm:text-5xl">Everything you need, in one place.</h2>
+        <p class="mt-5 text-pretty text-lg leading-8 text-slate-600">The Study-Hub feature set, rebuilt in a cleaner Revizely.ai style for fast revision and calm planning.</p>
+      </div>
+
+      <div class="feature-grid mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="feature-cell">
+          <span class="feature-icon bg-violet-100 text-violet-600"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Exam Notes</h3>
+          <p>Organised notes by subject and topic, with clear highlights and searchable summaries.</p>
+          <a href="public/signup.html" aria-label="Open Exam Notes"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-emerald-100 text-emerald-600"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h13a3 3 0 0 1 3 3v7H7a3 3 0 0 1-3-3V7Z" stroke="currentColor" stroke-width="2"/><path d="M8 11h7M8 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Flashcards</h3>
+          <p>Quiz mode, spaced repetition and review queues that keep the right cards in front of you.</p>
+          <a href="public/signup.html" aria-label="Open Flashcards"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-blue-100 text-blue-600"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v13H7V3Z" stroke="currentColor" stroke-width="2"/><path d="M14 3v6h5M10 14h6M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Past Papers</h3>
+          <p>Practise with timed papers, marked answers and a tidy record of your strongest topics.</p>
+          <a href="public/signup.html" aria-label="Open Past Papers"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-pink-100 text-pink-600"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="5" cy="6" r="2" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="6" r="2" stroke="currentColor" stroke-width="2"/><circle cx="5" cy="18" r="2" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="18" r="2" stroke="currentColor" stroke-width="2"/><path d="M7 7.4 9.8 10M14.2 10 17 7.4M7 16.6 9.8 14M14.2 14 17 16.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Knowledge Organisers</h3>
+          <p>Visual topic sheets and collapsible summaries for quick pre-exam recall.</p>
+          <a href="public/signup.html" aria-label="Open Knowledge Organisers"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-amber-100 text-amber-600"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m7 15 4-5 4 3 5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3>Progress Tracking</h3>
+          <p>Track XP, streaks, weak areas, activities and revision time across every subject.</p>
+          <a href="public/signup.html" aria-label="Open Progress Tracking"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-indigo-100 text-indigo-600"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 1.6 4.7 5 .1-4 2.9 1.5 4.8-4.1-2.9-4.1 2.9 1.5-4.8-4-2.9 5-.1L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M20 17v3M18.5 18.5h3M4 17v3M2.5 18.5h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>AI Study Assistant</h3>
+          <p>Generate questions, explain tricky topics and turn notes into useful revision tasks.</p>
+          <a href="public/signup.html" aria-label="Open AI Study Assistant"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </article>
+      </div>
+    </section>
+
+    <section id="get-started" class="mx-auto max-w-7xl px-5 pb-16 sm:px-7 lg:px-8 lg:pb-20">
+      <div class="cta-panel reveal flex flex-col gap-8 rounded-[28px] p-8 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:p-14">
+        <div>
+          <p class="eyebrow">Ready to revise better?</p>
+          <h2 class="mt-3 max-w-2xl text-balance text-4xl font-black leading-tight tracking-[-0.035em] text-slate-950 sm:text-5xl">Transform your study habits without adding clutter.</h2>
+          <p class="mt-4 max-w-xl text-lg leading-8 text-slate-700">Join students who organise work, practise smarter and keep progress visible.</p>
+        </div>
+        <a href="public/signup.html" class="magnetic-btn group inline-flex min-h-14 shrink-0 items-center justify-center gap-3 rounded-2xl bg-slate-950 px-7 text-base font-bold text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800">
+          Get Started for Free
+          <svg class="h-5 w-5 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-100 bg-white px-5 py-12 sm:px-7 lg:px-8">
+    <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+      <div>
+        <a href="#top" class="flex items-center gap-3 font-extrabold tracking-tight text-slate-950">
+          <img class="brand-logo brand-logo--small" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+          <span>Revizely.ai</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-7 text-slate-500">Your all-in-one study workspace. Built for students, designed for organised success.</p>
+      </div>
+      <div class="footer-col"><h3>Product</h3><a href="#features">Features</a><a href="#get-started">Get Started</a></div>
+      <div class="footer-col"><h3>Resources</h3><a href="#features">Study Tools</a><a href="#get-started">Get Started</a></div>
+      <div class="footer-col"><h3>Company</h3><a href="#top">About Us</a><a href="#top">Contact</a></div>
+      <div class="footer-col"><h3>Legal</h3><a href="#top">Terms of Service</a><a href="#top">Privacy Policy</a></div>
+    </div>
+    <div class="mx-auto mt-10 max-w-7xl border-t border-slate-100 pt-6 text-sm font-medium text-slate-400">&copy; 2026 Revizely.ai. All rights reserved.</div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    const header = document.getElementById("siteHeader");
+    const menuButton = document.getElementById("menuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const heroStage = document.getElementById("heroStage");
+    const heroAura = document.getElementById("heroAura");
+
+    window.addEventListener("scroll", () => {
+      header.classList.toggle("shadow-sm", window.scrollY > 8);
+    }, { passive: true });
+
+    menuButton.addEventListener("click", () => {
+      const isOpen = !mobileMenu.classList.contains("hidden");
+      mobileMenu.classList.toggle("hidden", isOpen);
+      menuButton.classList.toggle("is-open", !isOpen);
+      menuButton.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    document.querySelectorAll("#mobileMenu a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.add("hidden");
+        menuButton.classList.remove("is-open");
+        menuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    heroStage.addEventListener("mousemove", (event) => {
+      const rect = heroStage.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 100;
+      const y = ((event.clientY - rect.top) / rect.height) * 100;
+      heroAura.style.setProperty("--x", `${x}%`);
+      heroAura.style.setProperty("--y", `${y}%`);
+    });
+
+    document.querySelectorAll(".magnetic-btn").forEach((button) => {
+      button.addEventListener("mousemove", (event) => {
+        const rect = button.getBoundingClientRect();
+        const x = event.clientX - rect.left - rect.width / 2;
+        const y = event.clientY - rect.top - rect.height / 2;
+        button.style.transform = `translate(${x * 0.14}px, ${y * 0.18}px)`;
+        button.style.setProperty("--mx", `${((event.clientX - rect.left) / rect.width) * 100}%`);
+        button.style.setProperty("--my", `${((event.clientY - rect.top) / rect.height) * 100}%`);
+      });
+      button.addEventListener("mouseleave", () => {
+        button.style.transform = "";
+      });
+    });
+
+    document.querySelectorAll(".tilt-card").forEach((card) => {
+      card.addEventListener("mousemove", (event) => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+        card.style.transform = `perspective(800px) rotateX(${-y * 8}deg) rotateY(${x * 10}deg) translateY(-4px)`;
+        card.style.setProperty("--shine-x", `${(x + 0.5) * 100}%`);
+        card.style.setProperty("--shine-y", `${(y + 0.5) * 100}%`);
+      });
+      card.addEventListener("mouseleave", () => {
+        card.style.transform = "";
+      });
+    });
+
+    document.querySelectorAll(".feature-cell").forEach((cell) => {
+      cell.addEventListener("mousemove", (event) => {
+        const rect = cell.getBoundingClientRect();
+        cell.style.setProperty("--fx", `${((event.clientX - rect.left) / rect.width) * 100}%`);
+        cell.style.setProperty("--fy", `${((event.clientY - rect.top) / rect.height) * 100}%`);
+      });
+    });
+
+    document.querySelectorAll(".focus-row").forEach((row) => {
+      row.addEventListener("click", () => {
+        row.classList.toggle("is-complete");
+      });
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14 });
+    document.querySelectorAll(".reveal").forEach((element, index) => {
+      element.style.setProperty("--delay", `${Math.min(index % 6, 5) * 70}ms`);
+      revealObserver.observe(element);
+    });
+
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.count || 0);
+        const start = performance.now();
+        const duration = 1000;
+        const tick = (now) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = (target * eased).toFixed(1);
+          if (progress < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        counterObserver.unobserve(el);
+      });
+    }, { threshold: 0.4 });
+    document.querySelectorAll("[data-count]").forEach((el) => counterObserver.observe(el));
+
+    const progressPath = document.getElementById("progressPath");
+    if (progressPath) {
+      const length = progressPath.getTotalLength();
+      progressPath.style.strokeDasharray = length;
+      progressPath.style.strokeDashoffset = length;
+      const pathObserver = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting) {
+          progressPath.style.strokeDashoffset = "0";
+          pathObserver.disconnect();
+        }
+      }, { threshold: 0.4 });
+      pathObserver.observe(progressPath);
+    }
+
+    function initCanvasFallback(canvas) {
+      const ctx = canvas.getContext("2d");
+      const particles = Array.from({ length: 70 }, () => ({
+        x: Math.random(),
+        y: Math.random(),
+        r: 1 + Math.random() * 2.2,
+        vx: (Math.random() - 0.5) * 0.00025,
+        vy: (Math.random() - 0.5) * 0.00025,
+        hue: [232, 255, 164, 32][Math.floor(Math.random() * 4)],
+        alpha: 0.16 + Math.random() * 0.24
+      }));
+
+      const resize = () => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = Math.round(rect.width * Math.min(devicePixelRatio, 2));
+        canvas.height = Math.round(rect.height * Math.min(devicePixelRatio, 2));
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+        ctx.setTransform(canvas.width / rect.width, 0, 0, canvas.height / rect.height, 0, 0);
+      };
+      resize();
+      window.addEventListener("resize", resize);
+      canvas.dataset.engine = "canvas";
+
+      const draw = () => {
+        const rect = canvas.getBoundingClientRect();
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        particles.forEach((p, index) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0 || p.x > 1) p.vx *= -1;
+          if (p.y < 0 || p.y > 1) p.vy *= -1;
+
+          const px = p.x * rect.width;
+          const py = p.y * rect.height;
+          ctx.beginPath();
+          ctx.arc(px, py, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue}, 80%, 58%, ${p.alpha})`;
+          ctx.fill();
+
+          if (index % 8 === 0) {
+            const next = particles[(index + 9) % particles.length];
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(next.x * rect.width, next.y * rect.height);
+            ctx.strokeStyle = "rgba(255,255,255,0.12)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        });
+        requestAnimationFrame(draw);
+      };
+      draw();
+    }
+
+    function initStudyScene() {
+      const canvas = document.getElementById("studyScene");
+      if (!canvas) return;
+      if (!window.THREE) {
+        initCanvasFallback(canvas);
+        return;
+      }
+      canvas.dataset.engine = "three";
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+      camera.position.set(0, 0, 15);
+
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      const group = new THREE.Group();
+      scene.add(group);
+
+      const colours = [0x6d7cff, 0x9b7cff, 0x53c7a7, 0xf6a657];
+      const geometry = new THREE.SphereGeometry(0.035, 12, 12);
+      const points = [];
+
+      for (let i = 0; i < 74; i += 1) {
+        const material = new THREE.MeshBasicMaterial({
+          color: colours[i % colours.length],
+          transparent: true,
+          opacity: 0.26 + Math.random() * 0.26
+        });
+        const dot = new THREE.Mesh(geometry, material);
+        dot.position.set((Math.random() - 0.5) * 17, (Math.random() - 0.5) * 9, (Math.random() - 0.5) * 4);
+        dot.userData = {
+          baseX: dot.position.x,
+          baseY: dot.position.y,
+          speed: 0.45 + Math.random() * 0.65,
+          drift: Math.random() * Math.PI * 2
+        };
+        group.add(dot);
+        points.push(dot);
+      }
+
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.16 });
+      const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-8, -3.2, -1.5),
+        new THREE.Vector3(-3.5, 1.8, -1),
+        new THREE.Vector3(1.5, -0.4, -1.2),
+        new THREE.Vector3(6.8, 3.1, -1.6)
+      ]);
+      group.add(new THREE.Line(lineGeometry, lineMaterial));
+
+      const resize = () => {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        renderer.setSize(rect.width, rect.height, false);
+        camera.aspect = rect.width / rect.height;
+        camera.updateProjectionMatrix();
+      };
+      resize();
+      window.addEventListener("resize", resize);
+
+      let mouseX = 0;
+      let mouseY = 0;
+      heroStage.addEventListener("mousemove", (event) => {
+        const rect = heroStage.getBoundingClientRect();
+        mouseX = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+        mouseY = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+      });
+
+      const clock = new THREE.Clock();
+      const animate = () => {
+        const elapsed = clock.getElapsedTime();
+        group.rotation.y += (mouseX * 0.08 - group.rotation.y) * 0.02;
+        group.rotation.x += (-mouseY * 0.05 - group.rotation.x) * 0.02;
+        points.forEach((point) => {
+          point.position.y = point.userData.baseY + Math.sin(elapsed * point.userData.speed + point.userData.drift) * 0.24;
+          point.position.x = point.userData.baseX + Math.cos(elapsed * point.userData.speed * 0.6 + point.userData.drift) * 0.18;
+        });
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      };
+      animate();
+    }
+
+    initStudyScene();
+  </script>
+</body>
+</html>

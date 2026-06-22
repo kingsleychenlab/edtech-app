@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workspace | Revizely.ai</title>
+  <meta name="description" content="Your Revizely.ai revision workspace." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{fontFamily:{sans:["Inter","ui-sans-serif","system-ui"]}}}};</script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="../global.css" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body class="app-shell font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
+  <aside class="sidebar" id="sidebar" aria-label="Workspace navigation">
+    <div class="sidebar-brand">
+      <a class="brand-link" href="#dashboard" aria-label="Revizely.ai dashboard">
+        <img class="brand-logo" src="../assets/revizely-logo.png" alt="" />
+        <span>Revizely.ai</span>
+      </a>
+      <button class="icon-button mobile-only" id="closeMenu" type="button" aria-label="Close menu"><i data-lucide="x"></i></button>
+    </div>
+
+    <nav class="sidebar-nav" id="primaryNav">
+      <a class="nav-link premium-link" href="#premium" data-route="premium"><i data-lucide="crown"></i><span>Revizely Premium</span></a>
+      <p class="nav-label">Workspace</p>
+      <a class="nav-link" href="#dashboard" data-route="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+      <a class="nav-link" href="#quizzes" data-route="quizzes"><i data-lucide="circle-help"></i><span>Quizzes</span></a>
+      <a class="nav-link" href="#notes" data-route="notes"><i data-lucide="notebook-tabs"></i><span>Notes</span></a>
+      <a class="nav-link" href="#flashcards" data-route="flashcards"><i data-lucide="layers-3"></i><span>Flashcards</span></a>
+      <a class="nav-link" href="#papers" data-route="papers"><i data-lucide="file-text"></i><span>Past papers</span></a>
+      <a class="nav-link" href="#resources" data-route="resources"><i data-lucide="library"></i><span>Resource library</span></a>
+
+      <p class="nav-label nav-label-spaced">Study</p>
+      <a class="nav-link" href="#planner" data-route="planner"><i data-lucide="calendar-days"></i><span>Study plan</span></a>
+      <a class="nav-link" href="#tutor" data-route="tutor"><i data-lucide="sparkles"></i><span>AI tutor</span></a>
+      <a class="nav-link" href="#focus" data-route="focus"><i data-lucide="timer"></i><span>Focus mode</span></a>
+      <a class="nav-link" href="#progress" data-route="progress"><i data-lucide="chart-no-axes-column-increasing"></i><span>Progress</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="nav-link" href="#settings" data-route="settings"><i data-lucide="settings"></i><span>Settings</span></a>
+      <div class="user-chip">
+        <span class="avatar" id="sidebarAvatar">S</span>
+        <span class="user-copy"><strong id="sidebarName">Student</strong><small id="sidebarEmail"></small></span>
+        <button class="icon-button" type="button" data-action="signout" aria-label="Log out" title="Log out"><i data-lucide="log-out"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="menu-scrim" id="menuScrim"></div>
+
+  <main class="main-shell">
+    <header class="app-header">
+      <div class="mobile-brand">
+        <button class="icon-button" id="openMenu" type="button" aria-label="Open menu"><i data-lucide="menu"></i></button>
+        <img class="brand-logo brand-logo--small" src="../assets/revizely-logo.png" alt="" />
+        <strong>Revizely.ai</strong>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" type="button" data-action="quick-focus" aria-label="Start focus session" title="Start focus session"><i data-lucide="timer"></i></button>
+        <button class="avatar avatar-button" type="button" data-route-button="settings" aria-label="Open settings" id="headerAvatar">S</button>
+      </div>
+    </header>
+
+    <div class="view" id="view" tabindex="-1"></div>
+  </main>
+
+  <dialog class="modal" id="appModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div><p class="eyebrow" id="modalEyebrow">Create</p><h2 id="modalTitle">Add item</h2></div>
+        <button class="icon-button" type="button" id="closeModal" aria-label="Close"><i data-lucide="x"></i></button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
