@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "description": "Revizely.ai public site, private workspace and in-memory Node backend.",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "start": "node server/index.js",
-    "check": "node --check server/index.js && node --check server/api.js && node --check server/ai.js && node --check server/auth.js && node --check server/config.js && node --check server/http.js && node --check server/premium.js && node --check server/store.js && node --check app/app.js && node --check public/auth.js"
+    "start": "node backend/index.js",
+    "check": "node --check 'backend/index.js' && node --check 'backend/api.js' && node --check 'backend/ai.js' && node --check 'backend/auth.js' && node --check 'backend/config.js' && node --check 'backend/http.js' && node --check 'backend/premium.js' && node --check 'backend/store.js' && node --check 'backend/vercel.js' && node --check 'api/[...path].js' && node --check 'frontend/app/app.js' && node --check 'frontend/public/auth.js'",
+    "dev": "node backend/index.js"
   }
 }

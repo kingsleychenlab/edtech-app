@@ -5,7 +5,7 @@ const { handleApi } = require("./api");
 const { sendJson, serveStatic } = require("./http");
 
 const PORT = Number(process.env.PORT) || 4173;
-const ROOT = path.resolve(__dirname, "..");
+const ROOT = path.resolve(__dirname, "..", "frontend");
 
 const server = http.createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || "localhost"}`);

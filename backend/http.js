@@ -22,6 +22,20 @@ function sendJson(response, status, payload) {
 }
 
 function readJson(request) {
+  // Serverless platforms (Vercel) parse and consume the request stream before
+  // the handler runs, so prefer an already-parsed body when one is present.
+  if (request.body !== undefined && request.body !== null) {
+    const body = request.body;
+    if (typeof body === "object" && !Buffer.isBuffer(body)) return Promise.resolve(body);
+    const raw = Buffer.isBuffer(body) ? body.toString("utf8") : String(body);
+    try {
+      return Promise.resolve(raw ? JSON.parse(raw) : {});
+    } catch {
+      return Promise.reject(Object.assign(new Error("Invalid JSON."), { status: 400 }));
+    }
+  }
+  if (request.readableEnded) return Promise.resolve({});
+
   return new Promise((resolve, reject) => {
     let body = "";
     request.on("data", (chunk) => {

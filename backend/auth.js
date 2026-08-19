@@ -2,6 +2,12 @@ const crypto = require("node:crypto");
 const { sessions, usersById } = require("./store");
 
 const SESSION_COOKIE = "revizely_session";
+// Vercel (and any HTTPS host) should only hand the session cookie back over TLS.
+const SECURE_COOKIE = Boolean(process.env.VERCEL) || process.env.NODE_ENV === "production";
+
+function cookieAttributes(maxAge) {
+  return `HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}${SECURE_COOKIE ? "; Secure" : ""}`;
+}
 
 function normaliseEmail(value) {
   return String(value || "").trim().toLowerCase();
@@ -37,13 +43,13 @@ function getSessionUser(request) {
 function createSession(user, response) {
   const token = crypto.randomBytes(32).toString("base64url");
   sessions.set(token, user.id);
-  response.setHeader("Set-Cookie", `${SESSION_COOKIE}=${token}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`);
+  response.setHeader("Set-Cookie", `${SESSION_COOKIE}=${token}; ${cookieAttributes(604800)}`);
 }
 
 function clearSession(request, response) {
   const token = parseCookies(request)[SESSION_COOKIE];
   if (token) sessions.delete(token);
-  response.setHeader("Set-Cookie", `${SESSION_COOKIE}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`);
+  response.setHeader("Set-Cookie", `${SESSION_COOKIE}=; ${cookieAttributes(0)}`);
 }
 
 function publicUser(user) {
