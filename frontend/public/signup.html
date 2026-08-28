@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign up | Revizely.ai</title>
   <meta name="description" content="Create your Revizely.ai study workspace." />
+  <link rel="icon" type="image/svg+xml" href="../assets/revizely-logo.svg" />
+  <link rel="icon" type="image/png" href="../assets/revizely-logo.png" />
+  <link rel="apple-touch-icon" href="../assets/revizely-logo.png" />
+  <script>
+    // Applied before first paint so a dark-mode visitor never sees a light flash.
+    (function () {
+      try {
+        var stored = localStorage.getItem("revizely-theme") || "system";
+        var dark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
@@ -14,13 +29,19 @@
   <link rel="stylesheet" href="auth.css" />
 </head>
 <body class="auth-shell font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
-  <header class="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-xl">
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-xl">
     <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-7 lg:px-8" aria-label="Sign-up navigation">
       <a href="../index.html" class="group flex items-center gap-3 font-extrabold tracking-tight text-slate-950" aria-label="Revizely.ai home">
         <img class="brand-logo" src="../assets/revizely-logo.png" alt="" />
-        <span class="text-lg">Revizely.ai</span>
+        <span class="brand-wordmark">
+          <span class="text-lg leading-tight">Revizely.ai</span>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
       </a>
-      <a href="login.html" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Log in</a>
+      <div class="flex items-center gap-3">
+        <button type="button" data-theme-toggle class="theme-toggle" aria-label="Switch theme" title="Switch theme"></button>
+        <a href="login.html" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Log in</a>
+      </div>
     </nav>
   </header>
 
@@ -73,5 +94,36 @@
     </section>
   </main>
   <script src="auth.js"></script>
+  <script>
+    // Shared theme switch for the public pages. The workspace writes the same
+    // localStorage key, so a student's choice follows them across the site.
+    (function () {
+      var SUN = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var MOON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+      function current() {
+        return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      }
+
+      function paint() {
+        var dark = current() === "dark";
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+          button.innerHTML = dark ? SUN : MOON;
+          button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+        });
+      }
+
+      document.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-theme-toggle]");
+        if (!button) return;
+        var next = current() === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem("revizely-theme", next); } catch (error) { /* private mode */ }
+        paint();
+      });
+
+      paint();
+    })();
+  </script>
 </body>
 </html>

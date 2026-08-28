@@ -1,11 +1,37 @@
 let state = null;
+let currentUser = { id: "", name: "", email: "", roles: ["student"], friendCode: "" };
 let premiumCatalogue = { plans: [], features: [], currency: "GBP" };
 let focusRemaining = 0;
 let focusInterval = null;
 let toastTimer = null;
 let saveQueue = Promise.resolve();
 const aiOutputs = {};
-const remoteData = { leaderboard: null, classes: null };
+const remoteData = { leaderboard: null, classes: null, friends: null, challenges: null };
+
+// XP awarded per completed action, mirroring backend/store.js.
+const XP_REWARDS = {
+  task: 10,
+  quiz: 25,
+  note: 5,
+  card: 2,
+  paper: 15,
+  focus: 15,
+  deck: 5,
+  resource: 10,
+  extracurricular: 10,
+  opportunity: 10
+};
+
+const FOCUS_PRESETS = [5, 10, 15, 25, 30, 45, 60, 90];
+const CURRICULA = ["GCSE", "IGCSE", "A-Level", "SAT"];
+const YEAR_GROUPS = ["Year 9", "Year 10", "Year 11", "Year 12", "Year 13", "Other"];
+const SUBJECT_SUGGESTIONS = [
+  "Mathematics", "Further Mathematics", "English Language", "English Literature",
+  "Biology", "Chemistry", "Physics", "Combined Science", "Computer Science",
+  "History", "Geography", "Economics", "Business", "Psychology", "Sociology",
+  "French", "Spanish", "German", "Art & Design", "Music", "Physical Education",
+  "Religious Studies", "Design & Technology", "Drama"
+];
 
 const view = document.getElementById("view");
 const sidebar = document.getElementById("sidebar");
@@ -15,7 +41,7 @@ const modalBody = document.getElementById("modalBody");
 const modalTitle = document.getElementById("modalTitle");
 const modalEyebrow = document.getElementById("modalEyebrow");
 
-const routes = new Set(["dashboard", "quizzes", "notes", "flashcards", "papers", "resources", "planner", "tutor", "focus", "progress", "premium", "homework", "homework-solver", "note-condenser", "ai-examiner", "ai-study-plan", "beyond-theory", "grade9-studio", "model-answers", "predicted-papers", "virtual-sessions", "work-experience", "support", "cram-mode", "leaderboard", "competition-classes", "mind-map", "heatmap", "predicted-grades", "settings"]);
+const routes = new Set(["dashboard", "quizzes", "notes", "flashcards", "papers", "resources", "planner", "tutor", "focus", "progress", "premium", "homework", "homework-solver", "note-condenser", "ai-examiner", "ai-study-plan", "beyond-theory", "grade9-studio", "model-answers", "predicted-papers", "virtual-sessions", "work-experience", "support", "cram-mode", "leaderboard", "competition-classes", "mind-map", "heatmap", "predicted-grades", "settings", "friends", "challenges", "extracurriculars", "cv-builder", "creator-portal", "admin-portal"]);
 
 async function apiRequest(path, options = {}) {
   const headers = { ...(options.body ? { "Content-Type": "application/json" } : {}), ...(options.headers || {}) };
@@ -31,17 +57,61 @@ async function apiRequest(path, options = {}) {
 
 async function loadState() {
   const data = await apiRequest("/api/workspace");
+  return normaliseWorkspace(data.workspace);
+}
+
+// Defaults every field the UI reads, so a workspace saved by an older build
+// still renders instead of throwing on a missing object.
+function normaliseWorkspace(workspace) {
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const profile = workspace.profile || {};
+  const nameParts = String(profile.name || "").trim().split(/\s+/);
   return {
-    ...data.workspace,
-    quizzes: Array.isArray(data.workspace.quizzes) ? data.workspace.quizzes : [],
-    quizAttempts: Array.isArray(data.workspace.quizAttempts) ? data.workspace.quizAttempts : [],
-    mindMaps: Array.isArray(data.workspace.mindMaps) ? data.workspace.mindMaps : [],
-    virtualSessions: Array.isArray(data.workspace.virtualSessions) ? data.workspace.virtualSessions : [],
-    opportunities: Array.isArray(data.workspace.opportunities) ? data.workspace.opportunities : [],
-    supportTickets: Array.isArray(data.workspace.supportTickets) ? data.workspace.supportTickets : [],
-    generatedResources: Array.isArray(data.workspace.generatedResources) ? data.workspace.generatedResources : [],
-    predictedPapers: Array.isArray(data.workspace.predictedPapers) ? data.workspace.predictedPapers : [],
-    subscription: data.workspace.subscription || { status: "free", plan: null, currentPeriodEnd: null }
+    ...workspace,
+    profile: {
+      name: "",
+      firstName: nameParts[0] || "",
+      lastName: nameParts.slice(1).join(" "),
+      email: "",
+      school: "",
+      year: "",
+      curriculum: "",
+      examYear: "",
+      dailyGoal: 45,
+      onboarded: false,
+      ...profile,
+      subjects: list(profile.subjects)
+    },
+    preferences: { theme: "system", aiEnabled: true, ...(workspace.preferences || {}) },
+    notifications: { study: true, progress: true, content: true, achievements: true, ...(workspace.notifications || {}) },
+    streak: { current: 0, longest: 0, lastActiveDate: null, ...(workspace.streak || {}) },
+    xp: { total: 0, ...(workspace.xp || {}), history: list(workspace.xp?.history) },
+    cv: {
+      headline: "",
+      summary: "",
+      ...(workspace.cv || {}),
+      education: list(workspace.cv?.education),
+      experience: list(workspace.cv?.experience),
+      skills: list(workspace.cv?.skills),
+      achievements: list(workspace.cv?.achievements)
+    },
+    notes: list(workspace.notes),
+    decks: list(workspace.decks),
+    papers: list(workspace.papers),
+    tasks: list(workspace.tasks),
+    chat: list(workspace.chat),
+    quizzes: list(workspace.quizzes),
+    quizAttempts: list(workspace.quizAttempts),
+    mindMaps: list(workspace.mindMaps),
+    virtualSessions: list(workspace.virtualSessions),
+    opportunities: list(workspace.opportunities),
+    extracurriculars: list(workspace.extracurriculars),
+    supportTickets: list(workspace.supportTickets),
+    generatedResources: list(workspace.generatedResources),
+    predictedPapers: list(workspace.predictedPapers),
+    subscription: workspace.subscription || { status: "free", plan: null, currentPeriodEnd: null },
+    focusMinutes: Number(workspace.focusMinutes) || 25,
+    focusSessions: Number(workspace.focusSessions) || 0
   };
 }
 
@@ -51,12 +121,164 @@ async function loadPremiumCatalogue() {
 
 function saveState() {
   updateProfileUI();
+  updateHeaderMetrics();
   const snapshot = JSON.parse(JSON.stringify(state));
   saveQueue = saveQueue
     .catch(() => {})
     .then(() => apiRequest("/api/workspace", { method: "PUT", body: JSON.stringify({ workspace: snapshot }) }))
     .catch(() => showToast("Your latest change could not be saved."));
   return saveQueue;
+}
+
+/* ---------------------------------------------------------------------------
+ * Theme
+ * ------------------------------------------------------------------------ */
+
+const THEME_KEY = "revizely-theme";
+
+function resolvedTheme(preference) {
+  if (preference === "dark" || preference === "light") return preference;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+function applyTheme(preference) {
+  const theme = resolvedTheme(preference);
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem(THEME_KEY, preference); } catch { /* private mode */ }
+  const toggle = document.getElementById("themeToggle");
+  if (toggle) {
+    toggle.innerHTML = `<i data-lucide="${theme === "dark" ? "sun" : "moon"}"></i>`;
+    toggle.setAttribute("aria-label", theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    toggle.setAttribute("title", theme === "dark" ? "Light mode" : "Dark mode");
+  }
+  refreshIcons();
+}
+
+function setTheme(preference) {
+  state.preferences.theme = preference;
+  applyTheme(preference);
+  saveState();
+}
+
+function cycleTheme() {
+  // The button flips between the two concrete themes; "system" is chosen in Settings.
+  setTheme(resolvedTheme(state.preferences.theme) === "dark" ? "light" : "dark");
+}
+
+/* ---------------------------------------------------------------------------
+ * Streak
+ * ------------------------------------------------------------------------ */
+
+function todayKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function daysBetween(fromKey, toKey) {
+  const from = new Date(`${fromKey}T00:00:00`);
+  const to = new Date(`${toKey}T00:00:00`);
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return null;
+  return Math.round((to - from) / 86400000);
+}
+
+// Called once on load and again whenever the student completes something.
+// Returns true when the streak changed, so the caller can celebrate it.
+function touchStreak() {
+  const today = todayKey();
+  const streak = state.streak;
+  if (streak.lastActiveDate === today) return false;
+
+  const gap = streak.lastActiveDate ? daysBetween(streak.lastActiveDate, today) : null;
+  streak.current = gap === 1 ? streak.current + 1 : 1;
+  streak.lastActiveDate = today;
+  streak.longest = Math.max(streak.longest || 0, streak.current);
+  return true;
+}
+
+// A streak only lapses once the student is *two* days past their last activity,
+// so an untouched workspace opened the next morning still shows yesterday's run.
+function reconcileStreak() {
+  const streak = state.streak;
+  if (!streak.lastActiveDate) return;
+  const gap = daysBetween(streak.lastActiveDate, todayKey());
+  if (gap !== null && gap > 1) streak.current = 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * XP
+ * ------------------------------------------------------------------------ */
+
+function levelFromXp(total) {
+  // Each level costs 100 XP more than the last: 100, 300, 600, 1000, ...
+  return Math.floor((Math.sqrt(1 + (8 * Math.max(0, total)) / 100) - 1) / 2) + 1;
+}
+
+function xpForLevel(level) {
+  return (100 * (level - 1) * level) / 2;
+}
+
+function levelProgress(total) {
+  const level = levelFromXp(total);
+  const floor = xpForLevel(level);
+  const ceiling = xpForLevel(level + 1);
+  return {
+    level,
+    into: total - floor,
+    span: ceiling - floor,
+    percent: Math.round(((total - floor) / (ceiling - floor)) * 100)
+  };
+}
+
+// Awards XP, shows the floating reward and keeps the streak fresh.
+// `render` is skipped by callers that re-render themselves straight after.
+function awardXp(kind, label, options = {}) {
+  const amount = XP_REWARDS[kind] || 0;
+  if (!amount) return 0;
+
+  const beforeLevel = levelFromXp(state.xp.total);
+  state.xp.total += amount;
+  state.xp.history.unshift({ kind, label, amount, at: new Date().toISOString() });
+  state.xp.history = state.xp.history.slice(0, 50);
+
+  const streakChanged = touchStreak();
+  const afterLevel = levelFromXp(state.xp.total);
+
+  showXpReward(amount, label);
+  updateHeaderMetrics();
+
+  if (afterLevel > beforeLevel) {
+    setTimeout(() => showToast(`Level ${afterLevel} reached.`), 400);
+  } else if (streakChanged && state.streak.current > 1) {
+    setTimeout(() => showToast(`${state.streak.current}-day streak.`), 400);
+  }
+
+  if (options.save !== false) saveState();
+  return amount;
+}
+
+function showXpReward(amount, label) {
+  const layer = document.getElementById("xpLayer");
+  if (!layer) return;
+  const chip = document.createElement("div");
+  chip.className = "xp-pop";
+  chip.innerHTML = `<strong>+${amount} XP</strong>${label ? `<small>${escapeHTML(label)}</small>` : ""}`;
+  layer.appendChild(chip);
+  chip.addEventListener("animationend", () => chip.remove());
+  // Belt-and-braces cleanup for browsers that drop the animation event.
+  setTimeout(() => chip.remove(), 2600);
+}
+
+function updateHeaderMetrics() {
+  const target = document.getElementById("headerMetrics");
+  if (!target || !state) return;
+  const progress = levelProgress(state.xp.total);
+  target.innerHTML = `
+    <span class="metric-chip streak-chip" title="${state.streak.current}-day study streak">
+      <i data-lucide="flame"></i><strong>${state.streak.current}</strong>
+    </span>
+    <span class="metric-chip xp-chip" title="Level ${progress.level} · ${state.xp.total} XP total">
+      <i data-lucide="zap"></i><strong>${state.xp.total}</strong><small>XP</small>
+    </span>`;
+  refreshIcons();
 }
 
 function uid(prefix) {
@@ -90,6 +312,219 @@ function updateProfileUI() {
   document.getElementById("sidebarEmail").textContent = email;
   document.getElementById("sidebarAvatar").textContent = initial;
   document.getElementById("headerAvatar").textContent = initial;
+}
+
+/* ---------------------------------------------------------------------------
+ * Onboarding
+ * ------------------------------------------------------------------------ */
+
+const onboardingLayer = document.getElementById("onboardingLayer");
+let onboardingStep = 0;
+let onboardingDraft = null;
+
+function needsOnboarding() {
+  return !state.profile.onboarded;
+}
+
+function startOnboarding() {
+  onboardingStep = 0;
+  onboardingDraft = {
+    firstName: state.profile.firstName || (state.profile.name || "").split(" ")[0] || "",
+    lastName: state.profile.lastName || (state.profile.name || "").split(" ").slice(1).join(" "),
+    year: state.profile.year || "",
+    curriculum: state.profile.curriculum || "",
+    subjects: [...state.profile.subjects],
+    examYear: state.profile.examYear || String(new Date().getFullYear() + 1),
+    dailyGoal: state.profile.dailyGoal || 45
+  };
+  onboardingLayer.hidden = false;
+  document.body.classList.add("onboarding-open");
+  renderOnboarding();
+}
+
+function finishOnboarding() {
+  onboardingLayer.hidden = true;
+  onboardingLayer.innerHTML = "";
+  document.body.classList.remove("onboarding-open");
+}
+
+const ONBOARDING_STEPS = [
+  { title: "Welcome to Revizely", copy: "Revise wisely with Revizely. Let's set up your workspace — it takes about a minute." },
+  { title: "Where are you studying?", copy: "This shapes the exam board language used across your notes, papers and AI tools." },
+  { title: "Which subjects are you taking?", copy: "Pick everything you are revising. You can change these any time in Settings." },
+  { title: "Set your daily target", copy: "A realistic target you can hit most days beats an ambitious one you cannot." }
+];
+
+function renderOnboarding() {
+  const step = ONBOARDING_STEPS[onboardingStep];
+  const bodies = [onboardingNameStep, onboardingStageStep, onboardingSubjectsStep, onboardingGoalStep];
+  const isLast = onboardingStep === ONBOARDING_STEPS.length - 1;
+
+  onboardingLayer.innerHTML = `
+    <div class="onboarding-card" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+      <div class="onboarding-head">
+        <img class="brand-logo" src="../assets/revizely-logo.png" alt="" />
+        <span class="brand-wordmark">
+          <strong>Revizely.ai</strong>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
+      </div>
+      <div class="onboarding-progress" aria-hidden="true">
+        ${ONBOARDING_STEPS.map((_, index) => `<span class="${index <= onboardingStep ? "done" : ""}"></span>`).join("")}
+      </div>
+      <p class="eyebrow">Step ${onboardingStep + 1} of ${ONBOARDING_STEPS.length}</p>
+      <h1 id="onboardingTitle">${escapeHTML(step.title)}</h1>
+      <p class="onboarding-copy">${escapeHTML(step.copy)}</p>
+      <form class="onboarding-body form-grid" id="onboardingForm">
+        ${bodies[onboardingStep]()}
+        <div class="onboarding-actions">
+          ${onboardingStep > 0 ? `<button class="button-secondary" type="button" data-onboarding="back"><i data-lucide="arrow-left"></i>Back</button>` : `<span></span>`}
+          <button class="button" type="submit">${isLast ? "Finish setup" : "Continue"}<i data-lucide="arrow-right"></i></button>
+        </div>
+      </form>
+    </div>`;
+
+  refreshIcons();
+  bindOnboardingEvents();
+  const firstField = onboardingLayer.querySelector("input, select");
+  if (firstField) firstField.focus();
+}
+
+function onboardingNameStep() {
+  return `
+    <div class="form-grid two">
+      <label class="field-label">First name<input class="field" name="firstName" value="${escapeHTML(onboardingDraft.firstName)}" required autocomplete="given-name" /></label>
+      <label class="field-label">Last name<input class="field" name="lastName" value="${escapeHTML(onboardingDraft.lastName)}" autocomplete="family-name" /></label>
+    </div>`;
+}
+
+function onboardingStageStep() {
+  return `
+    <fieldset class="choice-grid">
+      <legend class="field-label-text">Qualification</legend>
+      ${CURRICULA.map((item) => `<label class="choice-card"><input type="radio" name="curriculum" value="${item}" ${onboardingDraft.curriculum === item ? "checked" : ""} required /><span>${item}</span></label>`).join("")}
+    </fieldset>
+    <div class="form-grid two">
+      <label class="field-label">Year or grade<select class="select" name="year" required><option value="">Select…</option>${YEAR_GROUPS.map((item) => `<option ${onboardingDraft.year === item ? "selected" : ""}>${item}</option>`).join("")}</select></label>
+      <label class="field-label">Exam year<input class="field" name="examYear" inputmode="numeric" value="${escapeHTML(onboardingDraft.examYear)}" required /></label>
+    </div>`;
+}
+
+function onboardingSubjectsStep() {
+  return `
+    <div class="subject-picker" data-subject-picker>
+      ${SUBJECT_SUGGESTIONS.map((subject) => `<button class="subject-chip ${onboardingDraft.subjects.includes(subject) ? "selected" : ""}" type="button" data-subject="${escapeHTML(subject)}">${escapeHTML(subject)}</button>`).join("")}
+    </div>
+    <label class="field-label">Add another subject
+      <span class="inline-add">
+        <input class="field" id="customSubject" placeholder="e.g. Latin" />
+        <button class="button-secondary" type="button" data-onboarding="add-subject"><i data-lucide="plus"></i>Add</button>
+      </span>
+    </label>
+    <p class="field-hint" id="subjectCount">${onboardingDraft.subjects.length} selected</p>`;
+}
+
+function onboardingGoalStep() {
+  return `
+    <label class="field-label">Daily focused study target
+      <select class="select" name="dailyGoal">
+        ${[20, 30, 45, 60, 90, 120].map((minutes) => `<option value="${minutes}" ${Number(onboardingDraft.dailyGoal) === minutes ? "selected" : ""}>${minutes} minutes</option>`).join("")}
+      </select>
+    </label>
+    <div class="onboarding-summary">
+      <h2>Your setup</h2>
+      <dl>
+        <div><dt>Name</dt><dd>${escapeHTML(`${onboardingDraft.firstName} ${onboardingDraft.lastName}`.trim() || "—")}</dd></div>
+        <div><dt>Qualification</dt><dd>${escapeHTML(onboardingDraft.curriculum || "—")}</dd></div>
+        <div><dt>Year</dt><dd>${escapeHTML(onboardingDraft.year || "—")}</dd></div>
+        <div><dt>Subjects</dt><dd>${onboardingDraft.subjects.length ? escapeHTML(onboardingDraft.subjects.join(", ")) : "—"}</dd></div>
+      </dl>
+    </div>`;
+}
+
+function bindOnboardingEvents() {
+  const form = document.getElementById("onboardingForm");
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+
+    if (onboardingStep === 0) {
+      onboardingDraft.firstName = String(data.firstName || "").trim();
+      onboardingDraft.lastName = String(data.lastName || "").trim();
+    }
+    if (onboardingStep === 1) {
+      onboardingDraft.curriculum = String(data.curriculum || "");
+      onboardingDraft.year = String(data.year || "");
+      onboardingDraft.examYear = String(data.examYear || "").trim();
+    }
+    if (onboardingStep === 2 && !onboardingDraft.subjects.length) {
+      showToast("Choose at least one subject.");
+      return;
+    }
+    if (onboardingStep === 3) {
+      onboardingDraft.dailyGoal = Number(data.dailyGoal) || 45;
+      completeOnboarding();
+      return;
+    }
+
+    onboardingStep += 1;
+    renderOnboarding();
+  });
+
+  onboardingLayer.querySelectorAll("[data-subject]").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const subject = chip.dataset.subject;
+      onboardingDraft.subjects = onboardingDraft.subjects.includes(subject)
+        ? onboardingDraft.subjects.filter((item) => item !== subject)
+        : [...onboardingDraft.subjects, subject];
+      chip.classList.toggle("selected");
+      const count = document.getElementById("subjectCount");
+      if (count) count.textContent = `${onboardingDraft.subjects.length} selected`;
+    });
+  });
+
+  const back = onboardingLayer.querySelector('[data-onboarding="back"]');
+  if (back) back.addEventListener("click", () => { onboardingStep -= 1; renderOnboarding(); });
+
+  const addSubject = onboardingLayer.querySelector('[data-onboarding="add-subject"]');
+  if (addSubject) {
+    const input = document.getElementById("customSubject");
+    const add = () => {
+      const value = input.value.trim();
+      if (!value) return;
+      if (!onboardingDraft.subjects.includes(value)) onboardingDraft.subjects.push(value);
+      input.value = "";
+      renderOnboarding();
+    };
+    addSubject.addEventListener("click", add);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") { event.preventDefault(); add(); }
+    });
+  }
+}
+
+async function completeOnboarding() {
+  const fullName = `${onboardingDraft.firstName} ${onboardingDraft.lastName}`.trim();
+  state.profile = {
+    ...state.profile,
+    firstName: onboardingDraft.firstName,
+    lastName: onboardingDraft.lastName,
+    name: fullName || state.profile.name,
+    year: onboardingDraft.year,
+    curriculum: onboardingDraft.curriculum,
+    examYear: onboardingDraft.examYear,
+    subjects: onboardingDraft.subjects,
+    dailyGoal: onboardingDraft.dailyGoal,
+    onboarded: true
+  };
+  touchStreak();
+  finishOnboarding();
+  updateProfileUI();
+  updateHeaderMetrics();
+  await saveState();
+  render();
+  showToast(`Welcome to Revizely, ${onboardingDraft.firstName || "student"}.`);
 }
 
 function render() {
@@ -126,6 +561,12 @@ function render() {
     "mind-map": renderMindMap,
     heatmap: renderHeatmap,
     "predicted-grades": renderPredictedGrades,
+    friends: renderFriends,
+    challenges: renderChallenges,
+    extracurriculars: renderExtracurriculars,
+    "cv-builder": renderCvBuilder,
+    "creator-portal": renderCreatorPortal,
+    "admin-portal": renderAdminPortal,
     settings: renderSettings
   };
 
@@ -149,6 +590,7 @@ function renderDashboard() {
     : 0;
   const pendingTasks = state.tasks.filter((task) => !task.done).slice(0, 4);
   const subjectProgress = buildSubjectAnalytics();
+  const progress = levelProgress(state.xp.total);
 
   return `
     <section class="dashboard-hero">
@@ -158,6 +600,26 @@ function renderDashboard() {
       <div class="hero-actions">
         <button class="button" type="button" data-route-button="focus"><i data-lucide="play"></i>Start focus session</button>
         <button class="button-secondary" type="button" data-action="new-note"><i data-lucide="plus"></i>New note</button>
+      </div>
+    </section>
+
+    <section class="streak-grid" aria-label="Streak and experience">
+      <div class="streak-card">
+        <span class="streak-icon"><i data-lucide="flame"></i></span>
+        <div>
+          <p class="eyebrow">Study streak</p>
+          <strong>${state.streak.current} day${state.streak.current === 1 ? "" : "s"}</strong>
+          <small>${state.streak.current ? `Longest run: ${state.streak.longest} days` : "Complete anything today to start a streak."}</small>
+        </div>
+      </div>
+      <div class="streak-card xp-card">
+        <span class="streak-icon xp"><i data-lucide="zap"></i></span>
+        <div>
+          <p class="eyebrow">Experience</p>
+          <strong>${state.xp.total} XP</strong>
+          <small>Level ${progress.level} · ${progress.into} / ${progress.span} to level ${progress.level + 1}</small>
+          <div class="progress-track xp-track"><div class="progress-fill" style="width:${progress.percent}%"></div></div>
+        </div>
       </div>
     </section>
 
@@ -572,15 +1034,25 @@ function formatDateTime(value) {
 }
 
 function renderFocus() {
+  const running = Boolean(focusInterval);
   return `
     ${pageHead("Focus mode", "One task, one timer and no extra noise.")}
     <section class="focus-wrap">
       <div>
         <p class="eyebrow">Focus session</p>
         <div class="timer-display" id="timerDisplay">${formatTime(focusRemaining)}</div>
-        <p class="timer-copy">${state.focusMinutes}-minute revision block · ${state.focusSessions} sessions completed</p>
+        <p class="timer-copy">${state.focusMinutes}-minute revision block · ${state.focusSessions} session${state.focusSessions === 1 ? "" : "s"} completed · +${XP_REWARDS.focus} XP each</p>
+
+        <div class="duration-picker" role="group" aria-label="Session length">
+          ${FOCUS_PRESETS.map((minutes) => `<button class="duration-chip ${state.focusMinutes === minutes ? "selected" : ""}" type="button" data-action="set-focus-minutes" data-minutes="${minutes}" ${running ? "disabled" : ""}>${minutes}m</button>`).join("")}
+          <button class="duration-chip ${FOCUS_PRESETS.includes(state.focusMinutes) ? "" : "selected"}" type="button" data-action="custom-focus-minutes" ${running ? "disabled" : ""}>
+            ${FOCUS_PRESETS.includes(state.focusMinutes) ? "Custom" : `${state.focusMinutes}m`}
+          </button>
+        </div>
+        ${running ? `<p class="field-hint">Pause or reset the timer to change the length.</p>` : ""}
+
         <div class="timer-actions">
-          <button class="button" type="button" id="toggleTimer"><i data-lucide="play"></i>${focusInterval ? "Pause" : "Start"}</button>
+          <button class="button" type="button" id="toggleTimer"><i data-lucide="${running ? "pause" : "play"}"></i>${running ? "Pause" : "Start"}</button>
           <button class="button-secondary" type="button" id="resetTimer"><i data-lucide="rotate-ccw"></i>Reset</button>
         </div>
       </div>
@@ -689,28 +1161,524 @@ function mindMapPreview(map) {
   return `<div class="mind-map-canvas"><div class="mind-map-root">${escapeHTML(map.title)}</div><div class="mind-map-branches">${map.points.map((point) => `<div class="mind-map-branch">${escapeHTML(point)}</div>`).join("")}</div></div>`;
 }
 
-function renderSettings() {
+/* ---------------------------------------------------------------------------
+ * Study — friends and challenges
+ * ------------------------------------------------------------------------ */
+
+function renderFriends() {
   return `
-    ${pageHead("Settings", "Keep your account details and study preferences up to date.")}
-    <section class="settings-layout">
-      <form class="panel form-grid" id="settingsForm">
-        <div class="panel-title"><h2>Profile</h2></div>
-        <label class="field-label">Full name<input class="field" name="name" value="${escapeHTML(state.profile.name)}" required /></label>
-        <label class="field-label">Email address<input class="field" type="email" name="email" value="${escapeHTML(state.profile.email)}" readonly /></label>
+    ${pageHead("Friends", "Add classmates with their friend code to compare progress and set challenges.")}
+    <section class="dashboard-row">
+      <div class="panel">
+        <div class="panel-title"><h2>Your friend code</h2></div>
+        <p class="settings-copy">Share this code so classmates can add you.</p>
+        <div class="code-display"><code id="friendCodeValue">${escapeHTML(currentUser.friendCode || "······")}</code><button class="button-secondary" type="button" data-action="copy-friend-code"><i data-lucide="copy"></i>Copy</button></div>
+        <form class="form-grid" data-friend-form style="margin-top:1.25rem">
+          <label class="field-label">Add a friend by code<input class="field" name="code" maxlength="6" placeholder="A1B2C3" required /></label>
+          <button class="button" type="submit"><i data-lucide="user-round-plus"></i>Add friend</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h2>Your friends</h2><span class="badge">${remoteData.friends ? remoteData.friends.length : "—"}</span></div>
+        <div id="friendsPanel">${friendsMarkup(remoteData.friends)}</div>
+      </div>
+    </section>`;
+}
+
+function friendsMarkup(friends) {
+  if (!friends) return emptyState("loader-circle", "Loading friends", "Fetching your list.");
+  if (!friends.length) return emptyState("user-round-plus", "No friends yet", "Add a classmate with their six-character friend code.");
+  return `<div class="insight-list">${friends.map((friend) => `
+    <div class="insight-row">
+      <span><strong>${escapeHTML(friend.name)}</strong><small>${friend.points} pts · ${friend.xp} XP · ${friend.streak}-day streak</small></span>
+      <div class="card-actions"><button class="icon-button" type="button" data-action="remove-friend" data-id="${friend.id}" aria-label="Remove ${escapeHTML(friend.name)}"><i data-lucide="user-round-minus"></i></button></div>
+    </div>`).join("")}</div>`;
+}
+
+function renderChallenges() {
+  return `
+    ${pageHead("Challenges", "Set a shared target with friends and track who is closest to it.")}
+    <section class="dashboard-row">
+      <form class="panel form-grid" data-challenge-form>
+        <div class="panel-title"><h2>New challenge</h2></div>
+        <label class="field-label">Challenge name<input class="field" name="title" placeholder="e.g. Half-term push" required /></label>
         <div class="form-grid two">
-          <label class="field-label">Exam year<input class="field" name="examYear" inputmode="numeric" value="${escapeHTML(state.profile.examYear)}" required /></label>
-          <label class="field-label">Daily goal (minutes)<input class="field" type="number" name="dailyGoal" min="10" max="240" value="${state.profile.dailyGoal}" required /></label>
+          <label class="field-label">Measure<select class="select" name="metric"><option value="xp">XP earned</option><option value="tasks">Tasks completed</option><option value="focus">Focus sessions</option><option value="quizzes">Quiz attempts</option></select></label>
+          <label class="field-label">Target<input class="field" type="number" name="target" min="1" value="500" required /></label>
         </div>
-        <div class="form-actions"><button class="button" type="submit">Save changes</button></div>
+        <label class="field-label">Runs for<select class="select" name="days"><option value="3">3 days</option><option value="7" selected>1 week</option><option value="14">2 weeks</option><option value="30">1 month</option></select></label>
+        <button class="button" type="submit"><i data-lucide="swords"></i>Create challenge</button>
       </form>
-      <aside class="panel">
-        <div class="panel-title"><h2>Account</h2></div>
-        <p class="settings-copy">Your study data is held by the Revizely server for this workspace. Database storage is not connected yet.</p>
-        <div class="form-grid" style="margin-top:1rem">
-          <button class="button-secondary" type="button" data-action="reset-workspace"><i data-lucide="rotate-ccw"></i>Reset workspace</button>
-          <button class="button-danger" type="button" data-action="signout"><i data-lucide="log-out"></i>Log out</button>
+      <div class="panel">
+        <div class="panel-title"><h2>Open to join</h2></div>
+        <p class="settings-copy">Challenges your friends have started.</p>
+        <div id="openChallengesPanel">${openChallengesMarkup(remoteData.openChallenges)}</div>
+      </div>
+    </section>
+    <div class="section-head"><h2>Your challenges</h2></div>
+    <section id="challengesPanel">${challengesMarkup(remoteData.challenges)}</section>`;
+}
+
+const CHALLENGE_METRICS = { xp: "XP", tasks: "tasks", focus: "focus sessions", quizzes: "quiz attempts" };
+
+function challengesMarkup(items) {
+  if (!items) return emptyState("loader-circle", "Loading challenges", "Checking what you have joined.");
+  if (!items.length) return emptyState("swords", "No challenges yet", "Create one and your friends can join it.");
+  return `<div class="content-grid">${items.map((item) => {
+    const you = item.standings.find((entry) => entry.current);
+    const percent = Math.min(100, Math.round(((you?.value || 0) / item.target) * 100));
+    return `<article class="panel">
+      <div class="card-topline"><h3>${escapeHTML(item.title)}</h3><span class="badge indigo">${item.target} ${escapeHTML(CHALLENGE_METRICS[item.metric] || item.metric)}</span></div>
+      <p>Ends ${escapeHTML(formatDateTime(item.endsAt))} · ${item.members} taking part</p>
+      <div class="paper-progress"><div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div><strong>${percent}%</strong></div>
+      <div class="leaderboard-list">${item.standings.map((entry, index) => `<div class="leaderboard-row ${entry.current ? "current" : ""}"><span class="leaderboard-rank">${index + 1}</span><strong>${escapeHTML(entry.name)}${entry.current ? " (you)" : ""}</strong><span>${entry.value}</span></div>`).join("")}</div>
+      <div class="card-actions"><button class="button-secondary" type="button" data-action="leave-challenge" data-id="${item.id}"><i data-lucide="log-out"></i>Leave</button></div>
+    </article>`;
+  }).join("")}</div>`;
+}
+
+function openChallengesMarkup(items) {
+  if (!items) return emptyState("loader-circle", "Loading", "Checking for friend challenges.");
+  if (!items.length) return emptyState("users-round", "Nothing open", "When a friend starts a challenge it appears here.");
+  return `<div class="insight-list">${items.map((item) => `
+    <div class="insight-row">
+      <span><strong>${escapeHTML(item.title)}</strong><small>${item.target} ${escapeHTML(CHALLENGE_METRICS[item.metric] || item.metric)} · ${item.members} taking part</small></span>
+      <div class="card-actions"><button class="button-secondary" type="button" data-action="join-challenge" data-id="${item.id}">Join</button></div>
+    </div>`).join("")}</div>`;
+}
+
+/* ---------------------------------------------------------------------------
+ * Career
+ * ------------------------------------------------------------------------ */
+
+function renderExtracurriculars() {
+  const totalHours = state.extracurriculars.reduce((sum, item) => sum + (Number(item.hours) || 0), 0);
+  return `
+    ${pageHead("Extracurriculars", "Record clubs, teams, volunteering and leadership roles while you remember the detail.")}
+    <section class="stats-grid">
+      <div class="stat-card"><span>Activities</span><strong>${state.extracurriculars.length}</strong></div>
+      <div class="stat-card"><span>Logged hours</span><strong>${totalHours}</strong></div>
+      <div class="stat-card"><span>Leadership roles</span><strong>${state.extracurriculars.filter((item) => item.leadership).length}</strong></div>
+      <div class="stat-card"><span>On your CV</span><strong>${state.cv.experience.length}</strong></div>
+    </section>
+    <section class="dashboard-row">
+      <form class="panel form-grid" data-collection-form="extracurriculars">
+        <div class="panel-title"><h2>Add activity</h2></div>
+        <label class="field-label">Activity<input class="field" name="title" placeholder="e.g. Debate Society" required /></label>
+        <label class="field-label">Your role<input class="field" name="role" placeholder="e.g. Team captain" required /></label>
+        <div class="form-grid two">
+          <label class="field-label">Category<select class="select" name="category"><option>Sport</option><option>Music &amp; arts</option><option>Volunteering</option><option>Academic club</option><option>Leadership</option><option>Work</option><option>Other</option></select></label>
+          <label class="field-label">Hours so far<input class="field" type="number" name="hours" min="0" value="0" /></label>
         </div>
-      </aside>
+        <label class="field-label">What you did<textarea class="textarea" name="details" placeholder="A sentence you could reuse on an application."></textarea></label>
+        <label class="checkbox-row"><input type="checkbox" name="leadership" /><span>This is a leadership position</span></label>
+        <button class="button" type="submit"><i data-lucide="plus"></i>Add activity</button>
+      </form>
+      <div class="panel">
+        <div class="panel-title"><h2>Your activities</h2><span class="badge">${state.extracurriculars.length}</span></div>
+        ${state.extracurriculars.length ? `<div class="insight-list">${state.extracurriculars.map((item) => `
+          <div class="insight-row">
+            <span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.role)} · ${escapeHTML(item.category || "Other")} · ${Number(item.hours) || 0}h${item.leadership ? " · leadership" : ""}</small></span>
+            <div class="card-actions">
+              <button class="icon-button" type="button" data-action="cv-add-activity" data-id="${item.id}" aria-label="Add to CV" title="Add to CV"><i data-lucide="file-plus"></i></button>
+              ${item.details ? `<button class="icon-button" type="button" data-action="view-collection-item" data-collection="extracurriculars" data-id="${item.id}" aria-label="Open ${escapeHTML(item.title)}"><i data-lucide="eye"></i></button>` : ""}
+              <button class="icon-button" type="button" data-action="delete-collection-item" data-collection="extracurriculars" data-id="${item.id}" aria-label="Delete ${escapeHTML(item.title)}"><i data-lucide="trash-2"></i></button>
+            </div>
+          </div>`).join("")}</div>` : emptyState("drama", "Nothing logged yet", "Add a club, team, role or volunteering commitment.")}
+      </div>
+    </section>`;
+}
+
+function renderCvBuilder() {
+  const cv = state.cv;
+  const sections = [
+    { key: "education", title: "Education", icon: "graduation-cap", fields: ["Institution", "Qualification", "Dates"] },
+    { key: "experience", title: "Experience & activities", icon: "briefcase-business", fields: ["Organisation", "Role", "Dates"] },
+    { key: "achievements", title: "Achievements", icon: "award", fields: ["Achievement", "Detail", "Year"] }
+  ];
+  return `
+    ${pageHead("CV builder", "Build a clean one-page CV from your school record, activities and work experience.", `<button class="button" type="button" data-action="preview-cv"><i data-lucide="eye"></i>Preview CV</button>`)}
+    <section class="dashboard-row">
+      <form class="panel form-grid" id="cvHeaderForm">
+        <div class="panel-title"><h2>Header</h2></div>
+        <label class="field-label">Headline<input class="field" name="headline" value="${escapeHTML(cv.headline)}" placeholder="e.g. Year 12 student — aspiring engineer" /></label>
+        <label class="field-label">Personal statement<textarea class="textarea textarea-large" name="summary" placeholder="Three or four sentences on who you are and what you are aiming for.">${escapeHTML(cv.summary)}</textarea></label>
+        <button class="button" type="submit"><i data-lucide="save"></i>Save header</button>
+      </form>
+      <div class="panel">
+        <div class="panel-title"><h2>Skills</h2><span class="badge">${cv.skills.length}</span></div>
+        <form class="form-grid" data-cv-skill-form>
+          <label class="field-label">Add a skill<span class="inline-add"><input class="field" name="skill" placeholder="e.g. Public speaking" required /><button class="button-secondary" type="submit"><i data-lucide="plus"></i>Add</button></span></label>
+        </form>
+        <div class="subject-picker" style="margin-top:1rem">
+          ${cv.skills.length ? cv.skills.map((skill, index) => `<span class="subject-chip selected">${escapeHTML(skill)}<button class="chip-remove" type="button" data-action="cv-remove-skill" data-index="${index}" aria-label="Remove ${escapeHTML(skill)}">&times;</button></span>`).join("") : `<p class="settings-copy">No skills added yet.</p>`}
+        </div>
+      </div>
+    </section>
+    ${sections.map((section) => `
+      <div class="section-head"><h2>${section.title}</h2><button class="button-secondary" type="button" data-action="cv-add-entry" data-section="${section.key}"><i data-lucide="plus"></i>Add entry</button></div>
+      <section class="panel">
+        ${cv[section.key].length ? `<div class="insight-list">${cv[section.key].map((entry) => `
+          <div class="insight-row">
+            <span><strong>${escapeHTML(entry.primary)}</strong><small>${escapeHTML([entry.secondary, entry.dates].filter(Boolean).join(" · "))}</small></span>
+            <div class="card-actions"><button class="icon-button" type="button" data-action="cv-remove-entry" data-section="${section.key}" data-id="${entry.id}" aria-label="Remove ${escapeHTML(entry.primary)}"><i data-lucide="trash-2"></i></button></div>
+          </div>`).join("")}</div>` : emptyState(section.icon, `No ${section.title.toLowerCase()} yet`, `Use Add entry to build this section.`)}
+      </section>`).join("")}`;
+}
+
+function cvDocumentMarkup() {
+  const cv = state.cv;
+  const profile = state.profile;
+  const block = (title, entries) => entries.length ? `
+    <section class="cv-section"><h3>${title}</h3>${entries.map((entry) => `
+      <div class="cv-entry"><strong>${escapeHTML(entry.primary)}</strong><span>${escapeHTML([entry.secondary, entry.dates].filter(Boolean).join(" · "))}</span></div>`).join("")}</section>` : "";
+  return `
+    <article class="cv-document">
+      <header>
+        <h2>${escapeHTML(`${profile.firstName} ${profile.lastName}`.trim() || profile.name || "Your name")}</h2>
+        <p>${escapeHTML([cv.headline, profile.school, profile.email].filter(Boolean).join(" · "))}</p>
+      </header>
+      ${cv.summary ? `<section class="cv-section"><h3>Personal statement</h3><p>${escapeHTML(cv.summary)}</p></section>` : ""}
+      ${block("Education", cv.education)}
+      ${block("Experience &amp; activities", cv.experience)}
+      ${block("Achievements", cv.achievements)}
+      ${cv.skills.length ? `<section class="cv-section"><h3>Skills</h3><p>${escapeHTML(cv.skills.join(" · "))}</p></section>` : ""}
+      ${profile.subjects.length ? `<section class="cv-section"><h3>Subjects</h3><p>${escapeHTML(profile.subjects.join(" · "))}</p></section>` : ""}
+    </article>`;
+}
+
+function renderSettings() {
+  const profile = state.profile;
+  const subscription = state.subscription;
+  const roles = currentUser.roles || ["student"];
+  const themes = [
+    { value: "light", label: "Light", icon: "sun" },
+    { value: "dark", label: "Dark", icon: "moon" },
+    { value: "system", label: "System", icon: "monitor" }
+  ];
+  const notificationRows = [
+    { key: "study", title: "Study notifications", copy: "Reminders for planned sessions and due tasks." },
+    { key: "progress", title: "Progress updates", copy: "Weekly summaries of quiz and paper performance." },
+    { key: "content", title: "New content alerts", copy: "Tell me when new resources and papers are added." },
+    { key: "achievements", title: "Achievement notifications", copy: "Streak milestones, levels and challenge results." }
+  ];
+  const legalLinks = [
+    { key: "terms", title: "Terms and conditions", icon: "scroll-text" },
+    { key: "privacy", title: "Privacy policy", icon: "shield-check" },
+    { key: "refund", title: "Refund policy", icon: "receipt" }
+  ];
+
+  return `
+    ${pageHead("Settings", "Manage your profile, notifications, privacy and subscription.")}
+
+    <section class="settings-stack">
+      <form class="panel form-grid" id="settingsForm">
+        <div class="panel-title"><h2><i data-lucide="user-round"></i>Profile</h2></div>
+        <div class="form-grid two">
+          <label class="field-label">First name<input class="field" name="firstName" value="${escapeHTML(profile.firstName)}" required /></label>
+          <label class="field-label">Last name<input class="field" name="lastName" value="${escapeHTML(profile.lastName)}" /></label>
+        </div>
+        <label class="field-label">Email address<input class="field" type="email" name="email" value="${escapeHTML(profile.email)}" readonly /></label>
+        <label class="field-label">School or college<input class="field" name="school" value="${escapeHTML(profile.school)}" placeholder="e.g. Northgate High School" /></label>
+        <div class="form-grid two">
+          <label class="field-label">Year or grade<select class="select" name="year">${["", ...YEAR_GROUPS].map((item) => `<option value="${escapeHTML(item)}" ${profile.year === item ? "selected" : ""}>${item || "Select…"}</option>`).join("")}</select></label>
+          <label class="field-label">Qualification<select class="select" name="curriculum">${["", ...CURRICULA].map((item) => `<option value="${escapeHTML(item)}" ${profile.curriculum === item ? "selected" : ""}>${item || "Select…"}</option>`).join("")}</select></label>
+        </div>
+        <div class="form-grid two">
+          <label class="field-label">Exam year<input class="field" name="examYear" inputmode="numeric" value="${escapeHTML(profile.examYear)}" /></label>
+          <label class="field-label">Daily goal (minutes)<input class="field" type="number" name="dailyGoal" min="10" max="240" value="${profile.dailyGoal}" required /></label>
+        </div>
+        <div class="field-label">
+          <span class="field-label-text">Subjects</span>
+          <div class="subject-picker" style="margin-top:0.5rem">
+            ${profile.subjects.length ? profile.subjects.map((subject, index) => `<span class="subject-chip selected">${escapeHTML(subject)}<button class="chip-remove" type="button" data-action="remove-subject" data-index="${index}" aria-label="Remove ${escapeHTML(subject)}">&times;</button></span>`).join("") : `<p class="settings-copy">No subjects selected.</p>`}
+          </div>
+          <span class="inline-add" style="margin-top:0.75rem">
+            <input class="field" id="settingsSubject" placeholder="Add a subject" />
+            <button class="button-secondary" type="button" data-action="add-subject"><i data-lucide="plus"></i>Add</button>
+          </span>
+        </div>
+        <div class="form-actions"><button class="button" type="submit"><i data-lucide="save"></i>Save profile</button></div>
+      </form>
+
+      <section class="panel">
+        <div class="panel-title"><h2><i data-lucide="palette"></i>Appearance</h2></div>
+        <p class="settings-copy">Choose how Revizely looks. System follows your device setting.</p>
+        <div class="choice-grid" style="margin-top:1rem">
+          ${themes.map((theme) => `<button class="choice-card ${state.preferences.theme === theme.value ? "selected" : ""}" type="button" data-action="set-theme" data-theme="${theme.value}"><i data-lucide="${theme.icon}"></i><span>${theme.label}</span></button>`).join("")}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><h2><i data-lucide="bell"></i>Notifications</h2></div>
+        <div class="toggle-list">
+          ${notificationRows.map((row) => `
+            <div class="toggle-row">
+              <span><strong>${row.title}</strong><small>${row.copy}</small></span>
+              <label class="switch"><input type="checkbox" data-notification="${row.key}" ${state.notifications[row.key] ? "checked" : ""} /><span class="switch-track"></span><span class="sr-only">${row.title}</span></label>
+            </div>`).join("")}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><h2><i data-lucide="sparkles"></i>AI features</h2></div>
+        <div class="toggle-list">
+          <div class="toggle-row">
+            <span><strong>Enable AI tools</strong><small>Turns the AI tutor, solver, examiner and generators on or off across the workspace.</small></span>
+            <label class="switch"><input type="checkbox" data-preference="aiEnabled" ${state.preferences.aiEnabled ? "checked" : ""} /><span class="switch-track"></span><span class="sr-only">Enable AI tools</span></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><h2><i data-lucide="credit-card"></i>Subscription</h2><span class="badge ${subscription.status === "active" ? "indigo" : ""}">${subscription.status === "active" ? "Premium" : "Free plan"}</span></div>
+        <p class="settings-copy">${subscription.status === "active"
+          ? `You are on the ${escapeHTML(subscription.plan || "premium")} plan${subscription.currentPeriodEnd ? `, renewing ${escapeHTML(subscription.currentPeriodEnd)}` : ""}.`
+          : "You are on the free plan. Premium unlocks the full set of AI study tools."}</p>
+        <div class="form-actions">
+          ${subscription.status === "active"
+            ? `<button class="button-danger" type="button" data-action="cancel-subscription"><i data-lucide="x-circle"></i>Cancel subscription</button>`
+            : `<button class="button" type="button" data-route-button="premium"><i data-lucide="crown"></i>See premium plans</button>`}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><h2><i data-lucide="scale"></i>Legal</h2></div>
+        <div class="link-list">
+          ${legalLinks.map((link) => `<button class="link-row" type="button" data-action="legal" data-doc="${link.key}"><i data-lucide="${link.icon}"></i><span>${link.title}</span><i data-lucide="chevron-right"></i></button>`).join("")}
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title"><h2><i data-lucide="id-card"></i>Roles and portals</h2></div>
+        <p class="settings-copy">Your account roles: ${roles.map((role) => `<span class="badge">${escapeHTML(role)}</span>`).join(" ")}</p>
+        <div class="link-list" style="margin-top:1rem">
+          ${roles.includes("creator")
+            ? `<button class="link-row" type="button" data-route-button="creator-portal"><i data-lucide="pen-tool"></i><span>Creator dashboard</span><i data-lucide="chevron-right"></i></button>`
+            : `<div class="link-row muted"><i data-lucide="lock"></i><span>Creator dashboard — not enabled for this account</span></div>`}
+          ${roles.includes("admin")
+            ? `<button class="link-row" type="button" data-route-button="admin-portal"><i data-lucide="shield"></i><span>Admin dashboard</span><i data-lucide="chevron-right"></i></button>`
+            : `<div class="link-row muted"><i data-lucide="lock"></i><span>Admin dashboard — not enabled for this account</span></div>`}
+        </div>
+      </section>
+
+      <section class="panel danger-panel">
+        <div class="panel-title"><h2><i data-lucide="triangle-alert"></i>Privacy</h2></div>
+        <p class="settings-copy">Reset clears your workspace but keeps your account. Deleting removes your account, workspace, friends and challenge history permanently.</p>
+        <div class="form-actions">
+          <button class="button-secondary" type="button" data-action="reset-workspace"><i data-lucide="rotate-ccw"></i>Reset workspace</button>
+          <button class="button-secondary" type="button" data-action="signout"><i data-lucide="log-out"></i>Log out</button>
+          <button class="button-danger" type="button" data-action="delete-account"><i data-lucide="trash-2"></i>Delete account</button>
+        </div>
+      </section>
+    </section>`;
+}
+
+const LEGAL_DOCUMENTS = {
+  terms: {
+    title: "Terms and conditions",
+    body: `1. About us and these terms
+
+1.1 These Terms and Conditions ("Terms") govern your access to and use of the REVIZELY website, web application and related services located at www.revizely.ai (the "Website") and any content, materials, products or services offered through it (together, the "Services").
+
+1.2 The Website is operated by REVIZELY LTD, a company registered in the United Kingdom with company number 17046803 and registered office at 61 Bridge Street, Kington, HR5 3DJ ("REVIZELY", "we", "us", "our").
+
+1.3 By accessing or using the Website or Services, you agree to be bound by these Terms. If you do not agree, you must not use the Website or Services.
+
+1.4 We may revise these Terms from time to time. The latest version will always be available on the Website and will apply from the date of publication. If you continue to use the Website after changes are posted, you will be deemed to have accepted the updated Terms.
+
+2. Eligibility and accounts
+
+2.1 You must be at least 13 years old, or have the consent of a parent or legal guardian, to create an account and use the Services.
+
+2.2 When you create an account, you must provide accurate, current and complete information and keep this information up to date.
+
+2.3 You are responsible for maintaining the confidentiality of your login details (including username and password) and for all activities that occur under your account. You must not share your account details with anyone else.
+
+2.4 We reserve the right to suspend, restrict or terminate any account at any time if, in our reasonable opinion, you have breached these Terms, created risk or possible legal exposure for us, or for any other reasonable business purpose.
+
+3. Subscription services and payments
+
+3.1 Certain content and features on REVIZELY are available only to paying subscribers ("Subscription"). Details of Subscription plans, pricing and term lengths are described on the Website from time to time.
+
+3.2 By starting a Subscription, you authorise us and our third-party payment processors (including Wise and Stripe) to charge you the Subscription fee and any applicable taxes at the rate notified to you at the time of purchase.
+
+3.3 Unless otherwise stated, Subscriptions are provided on a recurring basis (e.g. monthly, termly, annually) and will automatically renew at the end of each billing period, using the payment method you provided, until you cancel.
+
+3.4 You can cancel your Subscription at any time via your account settings or by contacting us at hello@revizely.ai. Cancellation will take effect at the end of your current billing period, and you will retain access to paid features until that date. We do not provide pro-rated refunds for unused periods unless required by applicable law or explicitly stated otherwise in writing.
+
+3.5 We may change our Subscription prices or structure from time to time. Any changes will take effect at the start of your next billing period and we will give you reasonable prior notice where required. If you do not agree to the change, you may cancel your Subscription before the new price takes effect.
+
+3.6 You are responsible for ensuring that your payment information is correct and that you have sufficient funds or credit available. If payment is not successfully processed, we may suspend or terminate your Subscription and/or account.
+
+4. Use of the Website and Services
+
+4.1 The Website and Services are provided for personal, non-commercial use for educational and revision purposes only, unless we expressly agree otherwise in writing.
+
+4.2 You agree that you will not:
+- Use the Website for any unlawful purpose or in breach of any applicable local, national or international law or regulation.
+- Copy, reproduce, distribute, sell, resell, or exploit any part of the Website or its content for commercial purposes without our prior written consent.
+- Attempt to circumvent or bypass any access or usage restrictions or security measures on the Website.
+- Upload, post or transmit any content that is unlawful, defamatory, obscene, harassing, discriminatory, infringing or otherwise objectionable.
+- Use any automated system, including "bots," "scrapers" or similar technologies, to access the Website without our prior written permission, except for bona fide search engine indexing.
+
+4.3 We may monitor use of the Website and remove or disable access to any content that we reasonably believe breaches these Terms or applicable law.
+
+5. Intellectual property
+
+5.1 All content on the Website, including (without limitation) text, questions, model answers, explanations, diagrams, videos, images, graphics, logos, icons, user interface design and software code, is owned by or licensed to REVIZELY and is protected by copyright, trade marks and other intellectual property rights.
+
+5.2 Subject to your compliance with these Terms and payment of any applicable Subscription fees, we grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Website and Services for your own personal, non-commercial educational use only.
+
+5.3 You must not:
+- Copy, reproduce, modify, adapt, translate, create derivative works of, distribute, transmit, sell, lease, or otherwise exploit the content or any part of the Website, except as expressly permitted in these Terms.
+- Remove, alter or obscure any copyright, trade mark or other proprietary rights notices on the Website or in any of its content.
+
+5.4 All trade marks, logos and trade names displayed on the Website (including "REVIZELY" and any related marks) are the property of REVIZELY or their respective owners. You may not use these marks without our prior written consent.
+
+6. User-generated content
+
+6.1 You may be able to submit, upload, post or otherwise share content on or through the Website (for example, comments, questions, answers, notes or other materials) ("User Content").
+
+6.2 You remain the owner of any intellectual property rights you hold in your User Content. However, by submitting User Content, you grant REVIZELY a worldwide, non-exclusive, royalty-free, transferable, sub-licensable licence to use, host, store, reproduce, modify, create derivative works of, communicate, publish, publicly display and distribute your User Content in connection with operating, improving and promoting the Website and Services.
+
+6.3 You are solely responsible for your User Content and for ensuring that it:
+- Is accurate and not misleading.
+- Does not infringe any copyright, trade mark, moral right, privacy, data protection or other rights of any third party.
+- Is lawful and not defamatory, obscene, harassing, hateful, discriminatory or otherwise objectionable.
+
+6.4 We may remove or disable access to any User Content at any time, without notice, if we reasonably believe it breaches these Terms or applicable law.
+
+7. No guarantee of exam results
+
+7.1 REVIZELY provides revision resources, practice questions, model answers, explanations and related content for educational support only.
+
+7.2 We do not guarantee that use of the Website or Services will result in any particular exam grade, academic outcome, admission to an institution, or other result.
+
+7.3 You remain responsible for your own learning, exam preparation and performance, including checking that any materials are suitable for your specific exam board, syllabus and year.
+
+8. Availability, changes and suspension
+
+8.1 We do not guarantee that the Website or any content will always be available or uninterrupted. We may suspend, withdraw or restrict the availability of all or any part of the Website for business or operational reasons.
+
+8.2 We may update or change the Website, the Services or any content at any time, for example to reflect changes to our users' needs, exam specifications, or our business priorities.
+
+8.3 We will try to give you reasonable notice of any significant changes that materially affect your existing Subscription, where practicable.
+
+9. Disclaimers
+
+9.1 The Website and Services are provided on an "as is" and "as available" basis and are intended for general information and educational purposes only.
+
+9.2 To the fullest extent permitted by law, we disclaim all warranties, representations or conditions, whether express or implied, including (without limitation) implied warranties of satisfactory quality, fitness for a particular purpose, accuracy, completeness and non-infringement.
+
+9.3 While we take reasonable steps to ensure that content is accurate and up to date, we do not warrant that any content is complete, current or error-free, or that it will always reflect the latest exam specifications or mark schemes.
+
+10. Limitation of liability
+
+10.1 Nothing in these Terms excludes or limits any liability that cannot be excluded or limited under applicable law, including liability for death or personal injury caused by our negligence, or for fraud or fraudulent misrepresentation.
+
+10.2 Subject to clause 10.1, we shall not be liable to you, whether in contract, tort (including negligence), breach of statutory duty, or otherwise, arising out of or in connection with these Terms, for:
+- Any loss of profits, loss of revenue, loss of anticipated savings, loss of business or loss of opportunity.
+- Any loss of data, corruption of data, or loss of goodwill or reputation.
+- Any indirect or consequential loss or damage.
+
+10.3 Subject to clause 10.1, our total aggregate liability to you in respect of all losses arising under or in connection with your use of the Website and Services shall in no circumstances exceed the greater of (a) the total amount you have paid to us in Subscription fees in the twelve (12) months preceding the event giving rise to the claim, and (b) £100.
+
+10.4 You are responsible for ensuring that your devices and software are compatible with the Website and for implementing appropriate security measures (such as anti-virus software and secure passwords).
+
+11. Indemnity
+
+11.1 You agree to indemnify and hold harmless REVIZELY, its directors, officers, employees and contractors from and against any and all claims, liabilities, damages, losses, costs and expenses (including reasonable legal fees) arising out of or in connection with:
+- Your breach of these Terms.
+- Your use of the Website or Services.
+- Your User Content.
+
+12. Third-party links and services
+
+12.1 The Website may contain links to third-party websites or services that are not owned or controlled by us.
+
+12.2 We have no control over, and assume no responsibility for, the content, privacy policies or practices of any third-party websites or services. You access any third-party sites at your own risk.
+
+13. Termination
+
+13.1 We may suspend or terminate your access to the Website or any part of the Services at any time if you materially breach these Terms, misuse the Website, or if required to do so by law or regulatory authority.
+
+13.2 Upon termination, your right to use the Services will immediately cease. Any provisions of these Terms which by their nature should reasonably survive termination shall survive, including but not limited to clauses relating to intellectual property, liability, indemnity and governing law.
+
+14. Governing law and jurisdiction
+
+14.1 These Terms, their subject matter and their formation are governed by the laws of England and Wales.
+
+14.2 You and we agree that the courts of England and Wales shall have exclusive jurisdiction to resolve any dispute or claim arising out of or in connection with these Terms or your use of the Website, except that if you are a consumer resident in another part of the UK, you may bring proceedings in your local courts as required by consumer law.
+
+15. Contact us
+
+15.1 If you have any questions about these Terms, please contact us at:
+Email: hello@revizely.ai
+Postal address: 61 Bridge Street, Kington, HR5 3DJ`
+  },
+  privacy: {
+    title: "Privacy policy",
+    body: `We store the account details you give us — your name, email address, school, year group and subjects — together with the study data you create in your workspace.
+
+Study data is used to power your workspace features: progress analytics, streaks, XP, leaderboards and the resources you save. Friends and classmates can see only your display name, points, XP and streak.
+
+Questions you send to the AI tools are passed to our AI provider to generate a response. Do not include personal details about yourself or anyone else in those questions.
+
+You can delete your account at any time from Settings. Deletion removes your workspace, friend links and challenge history.`
+  },
+  refund: {
+    title: "Refund policy",
+    body: `Digital Services Refund Policy
+Revizely.ai provides digital subscription services
+
+Since Revizely.ai is a digital service providing access to online study tools and features, we operate under specific refund policies designed for digital products.
+
+Premium Subscription Refunds
+
+14-Day Cooling-Off Period
+Under UK consumer law, you may cancel within 14 days of each purchase or renewal and receive a full refund. After that period, you can still cancel from Settings, but premium access continues until the end of your billing period and no refund is issued.
+
+How to Cancel or Request a Refund
+Go to Settings → Subscription to cancel premium. If you are within the 14-day cooling-off period, a full refund is processed automatically when you cancel. Refunds typically appear within 5–10 business days on your original payment method.
+
+Cancellation Policy
+You may cancel your Premium subscription at any time from your account settings. Cancellation will take effect at the end of your current billing period. You will continue to have access to Premium features until the end of your paid period.
+
+Important: Cancelling your subscription does not automatically entitle you to a refund for the current billing period. Refunds are only available within the 14-day money-back guarantee period for new subscriptions.`
+  }
+};
+
+function renderCreatorPortal() {
+  const resources = [...state.generatedResources, ...state.predictedPapers];
+  return `
+    ${pageHead("Creator dashboard", "Review the learning material you have produced and saved into Revizely.")}
+    <section class="stats-grid">
+      <div class="stat-card"><span>Saved resources</span><strong>${resources.length}</strong></div>
+      <div class="stat-card"><span>Practice papers</span><strong>${state.predictedPapers.length}</strong></div>
+      <div class="stat-card"><span>Quizzes authored</span><strong>${state.quizzes.length}</strong></div>
+      <div class="stat-card"><span>Notes written</span><strong>${state.notes.length}</strong></div>
+    </section>
+    <div class="section-head"><h2>Recent output</h2></div>
+    <section class="panel">
+      ${resources.length ? `<div class="insight-list">${resources.slice(0, 12).map((item) => `<div class="insight-row"><span><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(String(item.type).replaceAll("-", " "))} · ${escapeHTML(item.createdAt)}</small></span><div class="card-actions"><button class="icon-button" type="button" data-action="view-resource" data-id="${item.id}" aria-label="Open ${escapeHTML(item.title)}"><i data-lucide="eye"></i></button></div></div>`).join("")}</div>` : emptyState("pen-tool", "Nothing created yet", "Generate a resource from any AI tool and save it.")}
+    </section>`;
+}
+
+function renderAdminPortal() {
+  const entries = remoteData.leaderboard;
+  return `
+    ${pageHead("Admin dashboard", "Service-wide activity for the accounts on this Revizely instance.")}
+    <section class="stats-grid">
+      <div class="stat-card"><span>Ranked students</span><strong>${entries ? entries.length : "—"}</strong></div>
+      <div class="stat-card"><span>Total points</span><strong>${entries ? entries.reduce((sum, entry) => sum + entry.points, 0) : "—"}</strong></div>
+      <div class="stat-card"><span>Total XP</span><strong>${entries ? entries.reduce((sum, entry) => sum + (entry.xp || 0), 0) : "—"}</strong></div>
+      <div class="stat-card"><span>Longest streak</span><strong>${entries && entries.length ? Math.max(...entries.map((entry) => entry.streak || 0)) : "—"}</strong></div>
+    </section>
+    <div class="section-head"><h2>Accounts by activity</h2></div>
+    <section class="panel" id="leaderboardPanel">
+      ${entries ? `<div class="insight-list">${entries.map((entry, index) => `<div class="insight-row"><span><strong>${index + 1}. ${escapeHTML(entry.name)}${entry.current ? " (you)" : ""}</strong><small>${entry.points} pts · ${entry.xp || 0} XP · ${entry.streak || 0}-day streak</small></span></div>`).join("")}</div>` : emptyState("loader-circle", "Loading accounts", "Fetching service activity.")}
+      <p class="settings-copy" style="margin-top:1rem">Data is held in memory by this server instance and resets when it restarts.</p>
     </section>`;
 }
 
@@ -771,10 +1739,140 @@ function bindViewEvents(route) {
   const aiForm = view.querySelector("[data-ai-form]");
   if (aiForm) aiForm.addEventListener("submit", submitAiTool);
 
+  if (route === "settings") {
+    view.querySelectorAll("[data-notification]").forEach((input) => input.addEventListener("change", () => {
+      state.notifications[input.dataset.notification] = input.checked;
+      saveState();
+      showToast(input.checked ? "Notification enabled." : "Notification disabled.");
+    }));
+    view.querySelectorAll("[data-preference]").forEach((input) => input.addEventListener("change", () => {
+      state.preferences[input.dataset.preference] = input.checked;
+      saveState();
+      showToast(input.checked ? "AI features enabled." : "AI features disabled.");
+    }));
+  }
+
+  if (route === "cv-builder") {
+    document.getElementById("cvHeaderForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.currentTarget));
+      state.cv.headline = String(data.headline || "").trim();
+      state.cv.summary = String(data.summary || "").trim();
+      saveState();
+      showToast("CV header saved.");
+    });
+    const skillForm = view.querySelector("[data-cv-skill-form]");
+    if (skillForm) skillForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const value = String(new FormData(event.currentTarget).get("skill") || "").trim();
+      if (!value) return;
+      if (!state.cv.skills.includes(value)) state.cv.skills.push(value);
+      saveState();
+      render();
+    });
+  }
+
+  const friendForm = view.querySelector("[data-friend-form]");
+  if (friendForm) friendForm.addEventListener("submit", submitFriendForm);
+
+  const challengeForm = view.querySelector("[data-challenge-form]");
+  if (challengeForm) challengeForm.addEventListener("submit", submitChallengeForm);
+
   view.querySelectorAll("[data-collection-form]").forEach((form) => form.addEventListener("submit", submitCollectionItem));
   view.querySelectorAll("[data-class-form]").forEach((form) => form.addEventListener("submit", submitClassForm));
-  if (route === "leaderboard") loadLeaderboard();
+  if (route === "leaderboard" || route === "admin-portal") loadLeaderboard();
   if (route === "competition-classes") loadClasses();
+  if (route === "friends") loadFriends();
+  if (route === "challenges") loadChallenges();
+}
+
+async function submitFriendForm(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const code = String(new FormData(form).get("code") || "").trim().toUpperCase();
+  try {
+    const data = await apiRequest("/api/friends", { method: "POST", body: JSON.stringify({ action: "add", code }) });
+    remoteData.friends = data.friends;
+    form.reset();
+    render();
+    showToast("Friend added.");
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function submitChallengeForm(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const data = Object.fromEntries(new FormData(form));
+  try {
+    const result = await apiRequest("/api/challenges", {
+      method: "POST",
+      body: JSON.stringify({ action: "create", title: data.title, metric: data.metric, target: Number(data.target), days: Number(data.days) })
+    });
+    remoteData.challenges = result.challenges;
+    form.reset();
+    render();
+    showToast("Challenge created.");
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function loadFriends() {
+  try {
+    const data = await apiRequest("/api/friends");
+    remoteData.friends = data.friends;
+    if (data.friendCode) currentUser.friendCode = data.friendCode;
+    const panel = document.getElementById("friendsPanel");
+    if (panel) panel.innerHTML = friendsMarkup(remoteData.friends);
+    const code = document.getElementById("friendCodeValue");
+    if (code) code.textContent = currentUser.friendCode;
+    refreshIcons();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function loadChallenges() {
+  try {
+    const [mine, open] = await Promise.all([
+      apiRequest("/api/challenges"),
+      apiRequest("/api/challenges/open").catch(() => ({ challenges: [] }))
+    ]);
+    remoteData.challenges = mine.challenges;
+    remoteData.openChallenges = open.challenges;
+    const panel = document.getElementById("challengesPanel");
+    if (panel) panel.innerHTML = challengesMarkup(remoteData.challenges);
+    const openPanel = document.getElementById("openChallengesPanel");
+    if (openPanel) openPanel.innerHTML = openChallengesMarkup(remoteData.openChallenges);
+    refreshIcons();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function challengeAction(action, id) {
+  try {
+    const data = await apiRequest("/api/challenges", { method: "POST", body: JSON.stringify({ action, id }) });
+    remoteData.challenges = data.challenges;
+    remoteData.openChallenges = null;
+    render();
+    loadChallenges();
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function removeFriend(id) {
+  try {
+    const data = await apiRequest("/api/friends", { method: "POST", body: JSON.stringify({ action: "remove", id }) });
+    remoteData.friends = data.friends;
+    render();
+    showToast("Friend removed.");
+  } catch (error) {
+    showToast(error.message);
+  }
 }
 
 async function submitAiTool(event) {
@@ -785,6 +1883,10 @@ async function submitAiTool(event) {
     "homework-solver": "homework-solver", "note-condenser": "note-condenser", "ai-examiner": "examiner", "ai-study-plan": "study-plan",
     "beyond-theory": "beyond-theory", "grade9-studio": "grade9-resource", "model-answers": "model-answer", "predicted-papers": "predicted-paper"
   }[route];
+  if (!state.preferences.aiEnabled) {
+    showToast("AI features are switched off in Settings.");
+    return;
+  }
   const button = form.querySelector("button[type='submit']");
   const label = button.querySelector("span");
   const originalLabel = label.textContent;
@@ -814,9 +1916,27 @@ async function submitCollectionItem(event) {
   if (type === "virtualSessions") item = { id: uid("session"), title: data.title.trim(), startsAt: data.startsAt, duration: Number(data.duration), url: data.url.trim() };
   if (type === "opportunities") item = { id: uid("opportunity"), title: data.title.trim(), role: data.role.trim(), due: data.due, status: data.status, url: data.url.trim() };
   if (type === "supportTickets") item = { id: uid("ticket"), title: data.title.trim(), details: data.details.trim(), status: "Open", createdAt: new Date().toLocaleDateString("en-GB") };
+  if (type === "extracurriculars") item = {
+    id: uid("activity"),
+    title: data.title.trim(),
+    role: data.role.trim(),
+    category: data.category,
+    hours: Number(data.hours) || 0,
+    details: String(data.details || "").trim(),
+    leadership: Boolean(data.leadership),
+    createdAt: new Date().toLocaleDateString("en-GB")
+  };
   if (!item) return;
   state[type].unshift(item);
-  await saveState();
+  form.reset();
+
+  const xpKind = { extracurriculars: "extracurricular", opportunities: "opportunity" }[type];
+  if (xpKind) {
+    awardXp(xpKind, item.title);
+    await saveQueue;
+  } else {
+    await saveState();
+  }
   render();
   showToast("Saved.");
 }
@@ -983,7 +2103,7 @@ function takeQuiz(quiz) {
     modalTitle.textContent = quiz.title;
     modalBody.innerHTML = `
       <form id="quizAttemptForm">
-        <h3 style="margin:0;color:#0f172a;font-size:1.08rem;font-weight:900;line-height:1.5">${escapeHTML(question.prompt)}</h3>
+        <h3 style="margin:0;color:var(--app-ink);font-size:1.08rem;font-weight:900;line-height:1.5">${escapeHTML(question.prompt)}</h3>
         <div class="quiz-options">${question.options.map((option, optionIndex) => `<label class="quiz-option"><input type="radio" name="answer" value="${optionIndex}" required /><span>${escapeHTML(option)}</span></label>`).join("")}</div>
         <div class="form-actions"><button class="button" type="submit">${index === quiz.questions.length - 1 ? "Finish quiz" : "Next question"}<i data-lucide="arrow-right"></i></button></div>
       </form>`;
@@ -1007,7 +2127,8 @@ function takeQuiz(quiz) {
         max: quiz.questions.length,
         completedAt: new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
       });
-      await saveState();
+      awardXp("quiz", `${quiz.title} · ${score}/${quiz.questions.length}`);
+      await saveQueue;
       closeModal();
       render();
       showToast(`Quiz complete: ${score}/${quiz.questions.length}.`);
@@ -1070,20 +2191,58 @@ function handleModalSubmit(form) {
     showToast("Task added to your plan.");
   }
 
-  saveState();
+  if (type === "focus-minutes") {
+    closeModal();
+    setFocusMinutes(data.minutes);
+    return;
+  }
+
+  if (type === "cv-entry") {
+    const section = form.dataset.section;
+    state.cv[section] = [...state.cv[section], {
+      id: uid("cv"),
+      primary: String(data.primary || "").trim(),
+      secondary: String(data.secondary || "").trim(),
+      dates: String(data.dates || "").trim()
+    }];
+    showToast("Added to your CV.");
+  }
+
+  // Creating study material is itself worth XP; awardXp saves for us.
+  const xpKinds = { note: "note", deck: "deck", card: "card", quiz: "quiz", paper: "paper" };
+  const xpLabels = { note: "New note", deck: "New deck", card: "New flashcard", quiz: "New quiz", paper: "Paper logged" };
+  if (xpKinds[type] && !id) {
+    awardXp(xpKinds[type], xpLabels[type]);
+  } else {
+    saveState();
+  }
+
   closeModal();
   render();
 }
 
 function toggleTask(id) {
+  const target = state.tasks.find((task) => task.id === id);
+  const completing = target && !target.done;
   state.tasks = state.tasks.map((task) => task.id === id ? { ...task, done: !task.done } : task);
-  saveState();
+  // XP is awarded on completion only, and never twice for the same task —
+  // `awarded` is read from the pre-update object and persisted on the new one.
+  if (completing && !target.awarded) {
+    state.tasks = state.tasks.map((task) => task.id === id ? { ...task, awarded: true } : task);
+    awardXp("task", target.title);
+  } else {
+    saveState();
+  }
   render();
 }
 
 async function sendTutorMessage(text) {
   const question = text.trim();
   if (!question) return;
+  if (!state.preferences.aiEnabled) {
+    showToast("AI features are switched off in Settings.");
+    return;
+  }
   const history = state.chat.slice(-8);
   state.chat.push({ role: "user", text: question });
   render();
@@ -1112,13 +2271,33 @@ function toggleFocusTimer() {
       clearInterval(focusInterval);
       focusInterval = null;
       state.focusSessions += 1;
-      saveState();
       focusRemaining = state.focusMinutes * 60;
+      awardXp("focus", `${state.focusMinutes}-minute focus session`);
       showToast("Focus session complete.");
       render();
     }
   }, 1000);
   render();
+}
+
+function setFocusMinutes(minutes) {
+  const value = Math.min(Math.max(Math.round(Number(minutes) || 0), 1), 240);
+  if (!value) return;
+  state.focusMinutes = value;
+  clearInterval(focusInterval);
+  focusInterval = null;
+  focusRemaining = value * 60;
+  saveState();
+  render();
+}
+
+function promptCustomFocusMinutes() {
+  openModal("Focus mode", "Custom session length", `
+    <form class="form-grid" data-modal-form="focus-minutes">
+      <label class="field-label">Minutes<input class="field" type="number" name="minutes" min="1" max="240" value="${state.focusMinutes}" required autofocus /></label>
+      <p class="field-hint">Anything from 1 to 240 minutes.</p>
+      <div class="form-actions"><button class="button-secondary" type="button" data-close-modal>Cancel</button><button class="button" type="submit">Set length</button></div>
+    </form>`);
 }
 
 function resetFocusTimer() {
@@ -1137,9 +2316,21 @@ function formatTime(seconds) {
 function saveSettings(event) {
   event.preventDefault();
   const data = Object.fromEntries(new FormData(event.currentTarget));
-  state.profile = { ...state.profile, name: data.name.trim(), examYear: data.examYear.trim(), dailyGoal: Number(data.dailyGoal) };
+  const firstName = String(data.firstName || "").trim();
+  const lastName = String(data.lastName || "").trim();
+  state.profile = {
+    ...state.profile,
+    firstName,
+    lastName,
+    name: `${firstName} ${lastName}`.trim() || state.profile.name,
+    school: String(data.school || "").trim(),
+    year: String(data.year || ""),
+    curriculum: String(data.curriculum || ""),
+    examYear: String(data.examYear || "").trim(),
+    dailyGoal: Number(data.dailyGoal) || state.profile.dailyGoal
+  };
   saveState();
-  showToast("Settings saved.");
+  showToast("Profile saved.");
   render();
 }
 
@@ -1262,7 +2453,113 @@ document.addEventListener("click", (event) => {
   }
   if (action.dataset.action === "reset-workspace" && confirm("Reset all workspace data?")) resetWorkspace();
   if (action.dataset.action === "signout") signOut();
+
+  if (action.dataset.action === "toggle-theme") cycleTheme();
+  if (action.dataset.action === "set-theme") { setTheme(action.dataset.theme); render(); }
+
+  if (action.dataset.action === "set-focus-minutes") setFocusMinutes(action.dataset.minutes);
+  if (action.dataset.action === "custom-focus-minutes") promptCustomFocusMinutes();
+
+  if (action.dataset.action === "copy-friend-code") {
+    navigator.clipboard.writeText(currentUser.friendCode || "")
+      .then(() => showToast("Friend code copied."))
+      .catch(() => showToast("Could not copy the code."));
+  }
+  if (action.dataset.action === "remove-friend" && confirm("Remove this friend?")) removeFriend(id);
+  if (action.dataset.action === "join-challenge") challengeAction("join", id);
+  if (action.dataset.action === "leave-challenge" && confirm("Leave this challenge?")) challengeAction("leave", id);
+
+  if (action.dataset.action === "add-subject") {
+    const input = document.getElementById("settingsSubject");
+    const value = input.value.trim();
+    if (!value) return;
+    if (!state.profile.subjects.includes(value)) state.profile.subjects.push(value);
+    saveState();
+    render();
+  }
+  if (action.dataset.action === "remove-subject") {
+    state.profile.subjects.splice(Number(action.dataset.index), 1);
+    saveState();
+    render();
+  }
+
+  if (action.dataset.action === "cv-remove-skill") {
+    state.cv.skills.splice(Number(action.dataset.index), 1);
+    saveState();
+    render();
+  }
+  if (action.dataset.action === "cv-add-entry") cvEntryForm(action.dataset.section);
+  if (action.dataset.action === "cv-remove-entry") {
+    const section = action.dataset.section;
+    state.cv[section] = state.cv[section].filter((entry) => entry.id !== id);
+    saveState();
+    render();
+  }
+  if (action.dataset.action === "cv-add-activity") {
+    const activity = state.extracurriculars.find((item) => item.id === id);
+    if (activity) {
+      state.cv.experience = [...state.cv.experience, {
+        id: uid("cv"),
+        primary: activity.title,
+        secondary: activity.role,
+        dates: `${Number(activity.hours) || 0} hours`
+      }];
+      saveState();
+      showToast("Added to your CV.");
+    }
+  }
+  if (action.dataset.action === "preview-cv") {
+    openModal("CV builder", "CV preview", `${cvDocumentMarkup()}<div class="form-actions"><button class="button-secondary" type="button" data-action="print-cv"><i data-lucide="printer"></i>Print</button><button class="button" type="button" data-close-modal>Done</button></div>`);
+  }
+  if (action.dataset.action === "print-cv") window.print();
+
+  if (action.dataset.action === "legal") {
+    const doc = LEGAL_DOCUMENTS[action.dataset.doc];
+    if (doc) openModal("Legal", doc.title, `<div class="ai-output resource-preview">${escapeHTML(doc.body)}</div><div class="form-actions"><button class="button" type="button" data-close-modal>Close</button></div>`);
+  }
+
+  if (action.dataset.action === "cancel-subscription" && confirm("Cancel your premium subscription?")) cancelSubscription();
+  if (action.dataset.action === "delete-account") deleteAccount();
 });
+
+function cvEntryForm(section) {
+  const labels = {
+    education: { title: "Add education", primary: "Institution", secondary: "Qualification and grades", dates: "Dates" },
+    experience: { title: "Add experience", primary: "Organisation", secondary: "Role and responsibilities", dates: "Dates" },
+    achievements: { title: "Add achievement", primary: "Achievement", secondary: "Detail", dates: "Year" }
+  };
+  const copy = labels[section];
+  if (!copy) return;
+  openModal("CV builder", copy.title, `
+    <form class="form-grid" data-modal-form="cv-entry" data-section="${section}">
+      <label class="field-label">${copy.primary}<input class="field" name="primary" required /></label>
+      <label class="field-label">${copy.secondary}<input class="field" name="secondary" /></label>
+      <label class="field-label">${copy.dates}<input class="field" name="dates" placeholder="e.g. 2023 – 2025" /></label>
+      <div class="form-actions"><button class="button-secondary" type="button" data-close-modal>Cancel</button><button class="button" type="submit">Add entry</button></div>
+    </form>`);
+}
+
+async function cancelSubscription() {
+  try {
+    const data = await apiRequest("/api/premium/cancel", { method: "POST" });
+    state.subscription = data.subscription;
+    render();
+    showToast("Subscription cancelled.");
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+async function deleteAccount() {
+  if (!confirm("Delete your account? This permanently removes your workspace, friends and challenge history.")) return;
+  if (!confirm("This cannot be undone. Delete your Revizely account for good?")) return;
+  try {
+    await apiRequest("/api/account", { method: "DELETE" });
+    window.location.href = "../public/signup.html";
+  } catch (error) {
+    showToast(error.message);
+  }
+}
 
 modalBody.addEventListener("click", (event) => {
   if (event.target.closest("[data-close-modal]")) closeModal();
@@ -1278,6 +2575,7 @@ modalBody.addEventListener("submit", (event) => {
 window.addEventListener("hashchange", render);
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeMenu();
+  if (!onboardingLayer.hidden) return;
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n" && currentRoute() === "notes") {
     event.preventDefault();
     noteForm();
@@ -1287,10 +2585,12 @@ window.addEventListener("keydown", (event) => {
 async function resetWorkspace() {
   try {
     const data = await apiRequest("/api/workspace", { method: "DELETE" });
-    state = data.workspace;
+    state = normaliseWorkspace(data.workspace);
     focusRemaining = state.focusMinutes * 60;
+    applyTheme(state.preferences.theme);
     render();
     updateProfileUI();
+    updateHeaderMetrics();
     showToast("Workspace reset.");
   } catch (error) {
     showToast(error.message);
@@ -1313,17 +2613,40 @@ async function selectPremiumPlan(plan) {
 
 async function initialise() {
   try {
-    const [workspace, catalogue] = await Promise.all([loadState(), loadPremiumCatalogue()]);
+    const [workspace, catalogue, session] = await Promise.all([
+      loadState(),
+      loadPremiumCatalogue(),
+      apiRequest("/api/session").catch(() => null)
+    ]);
     state = workspace;
     premiumCatalogue = catalogue;
+    if (session?.user) currentUser = { ...currentUser, ...session.user };
     if (!state) return;
+
+    applyTheme(state.preferences.theme);
+    reconcileStreak();
     focusRemaining = state.focusMinutes * 60;
     updateProfileUI();
+    updateHeaderMetrics();
     render();
     refreshIcons();
+
+    if (needsOnboarding()) {
+      startOnboarding();
+    } else if (touchStreak()) {
+      // Opening the workspace on a new day keeps the streak alive.
+      updateHeaderMetrics();
+      saveState();
+      if (currentRoute() === "dashboard") render();
+    }
   } catch (error) {
     view.innerHTML = `<div class="empty-state"><strong>Workspace unavailable</strong><p>${escapeHTML(error.message)}</p></div>`;
   }
 }
+
+// Follow the device when the student has chosen "system".
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+  if (state && state.preferences.theme === "system") applyTheme("system");
+});
 
 initialise();

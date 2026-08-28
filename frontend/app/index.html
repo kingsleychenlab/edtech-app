@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Workspace | Revizely.ai</title>
   <meta name="description" content="Your Revizely.ai revision workspace." />
+  <link rel="icon" type="image/svg+xml" href="../assets/revizely-logo.svg" />
+  <link rel="icon" type="image/png" href="../assets/revizely-logo.png" />
+  <link rel="apple-touch-icon" href="../assets/revizely-logo.png" />
+  <script>
+    // Applied before first paint so a dark-mode user never sees a light flash.
+    (function () {
+      try {
+        var stored = localStorage.getItem("revizely-theme") || "system";
+        var dark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
@@ -14,31 +29,44 @@
   <link rel="stylesheet" href="../global.css" />
   <link rel="stylesheet" href="app.css" />
 </head>
-<body class="app-shell font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
+<body class="app-shell font-sans antialiased">
   <aside class="sidebar" id="sidebar" aria-label="Workspace navigation">
     <div class="sidebar-brand">
       <a class="brand-link" href="#dashboard" aria-label="Revizely.ai dashboard">
         <img class="brand-logo" src="../assets/revizely-logo.png" alt="" />
-        <span>Revizely.ai</span>
+        <span class="brand-wordmark">
+          <strong>Revizely.ai</strong>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
       </a>
       <button class="icon-button mobile-only" id="closeMenu" type="button" aria-label="Close menu"><i data-lucide="x"></i></button>
     </div>
 
     <nav class="sidebar-nav" id="primaryNav">
       <a class="nav-link premium-link" href="#premium" data-route="premium"><i data-lucide="crown"></i><span>Revizely Premium</span></a>
+
       <p class="nav-label">Workspace</p>
       <a class="nav-link" href="#dashboard" data-route="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
-      <a class="nav-link" href="#quizzes" data-route="quizzes"><i data-lucide="circle-help"></i><span>Quizzes</span></a>
       <a class="nav-link" href="#notes" data-route="notes"><i data-lucide="notebook-tabs"></i><span>Notes</span></a>
       <a class="nav-link" href="#flashcards" data-route="flashcards"><i data-lucide="layers-3"></i><span>Flashcards</span></a>
       <a class="nav-link" href="#papers" data-route="papers"><i data-lucide="file-text"></i><span>Past papers</span></a>
       <a class="nav-link" href="#resources" data-route="resources"><i data-lucide="library"></i><span>Resource library</span></a>
+      <a class="nav-link" href="#homework" data-route="homework"><i data-lucide="calendar-check"></i><span>Homework</span></a>
 
       <p class="nav-label nav-label-spaced">Study</p>
+      <a class="nav-link" href="#quizzes" data-route="quizzes"><i data-lucide="circle-help"></i><span>Quizzes</span></a>
       <a class="nav-link" href="#planner" data-route="planner"><i data-lucide="calendar-days"></i><span>Study plan</span></a>
       <a class="nav-link" href="#tutor" data-route="tutor"><i data-lucide="sparkles"></i><span>AI tutor</span></a>
       <a class="nav-link" href="#focus" data-route="focus"><i data-lucide="timer"></i><span>Focus mode</span></a>
       <a class="nav-link" href="#progress" data-route="progress"><i data-lucide="chart-no-axes-column-increasing"></i><span>Progress</span></a>
+      <a class="nav-link" href="#friends" data-route="friends"><i data-lucide="user-round-plus"></i><span>Friends</span></a>
+      <a class="nav-link" href="#challenges" data-route="challenges"><i data-lucide="swords"></i><span>Challenges</span></a>
+      <a class="nav-link" href="#leaderboard" data-route="leaderboard"><i data-lucide="trophy"></i><span>Leaderboard</span></a>
+
+      <p class="nav-label nav-label-spaced">Career</p>
+      <a class="nav-link" href="#extracurriculars" data-route="extracurriculars"><i data-lucide="drama"></i><span>Extracurriculars</span></a>
+      <a class="nav-link" href="#work-experience" data-route="work-experience"><i data-lucide="briefcase-business"></i><span>Work experience</span></a>
+      <a class="nav-link" href="#cv-builder" data-route="cv-builder"><i data-lucide="file-user"></i><span>CV builder</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -58,9 +86,14 @@
       <div class="mobile-brand">
         <button class="icon-button" id="openMenu" type="button" aria-label="Open menu"><i data-lucide="menu"></i></button>
         <img class="brand-logo brand-logo--small" src="../assets/revizely-logo.png" alt="" />
-        <strong>Revizely.ai</strong>
+        <span class="brand-wordmark">
+          <strong>Revizely.ai</strong>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
       </div>
       <div class="header-actions">
+        <div class="header-metrics" id="headerMetrics"></div>
+        <button class="icon-button" type="button" data-action="toggle-theme" id="themeToggle" aria-label="Switch theme" title="Switch theme"><i data-lucide="moon"></i></button>
         <button class="icon-button" type="button" data-action="quick-focus" aria-label="Start focus session" title="Start focus session"><i data-lucide="timer"></i></button>
         <button class="avatar avatar-button" type="button" data-route-button="settings" aria-label="Open settings" id="headerAvatar">S</button>
       </div>
@@ -68,6 +101,8 @@
 
     <div class="view" id="view" tabindex="-1"></div>
   </main>
+
+  <div class="onboarding-layer" id="onboardingLayer" hidden></div>
 
   <dialog class="modal" id="appModal">
     <div class="modal-card">
@@ -79,6 +114,7 @@
     </div>
   </dialog>
 
+  <div class="xp-layer" id="xpLayer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="app.js"></script>
 </body>

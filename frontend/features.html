@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features | Revizely.ai</title>
+  <meta name="description" content="Every study tool in Revizely.ai, organised by Workspace, Study and Career." />
+  <link rel="icon" type="image/svg+xml" href="assets/revizely-logo.svg" />
+  <link rel="icon" type="image/png" href="assets/revizely-logo.png" />
+  <link rel="apple-touch-icon" href="assets/revizely-logo.png" />
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("revizely-theme") || "system";
+        var dark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="global.css" />
+</head>
+<body class="bg-white font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-2xl transition-shadow duration-300">
+    <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-7 lg:px-8" aria-label="Primary navigation">
+      <a href="index.html" class="group flex items-center gap-3 font-extrabold tracking-tight text-slate-950" aria-label="Revizely.ai home">
+        <img class="brand-logo" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+        <span class="brand-wordmark">
+          <span class="text-lg leading-tight">Revizely.ai</span>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
+      </a>
+
+      <div class="hidden items-center gap-3 md:flex">
+        <button type="button" data-theme-toggle class="theme-toggle" aria-label="Switch theme" title="Switch theme"></button>
+        <a href="public/login.html" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Log in</a>
+        <a href="public/signup.html" class="magnetic-btn rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-slate-800">Get Started</a>
+      </div>
+
+      <button type="button" data-theme-toggle class="theme-toggle md:hidden" aria-label="Switch theme" title="Switch theme"></button>
+      <button id="menuButton" class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm md:hidden" aria-label="Open menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-slate-100 bg-white/96 px-5 py-4 shadow-xl shadow-slate-950/5 md:hidden">
+      <div class="mx-auto flex max-w-7xl flex-col gap-2">
+        <a class="mobile-link" href="public/login.html">Log in</a>
+        <a class="mt-2 rounded-xl bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white" href="public/signup.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="mx-auto max-w-7xl px-5 pb-8 pt-32 text-center sm:px-7 sm:pt-36 lg:px-8">
+      <p class="eyebrow mx-auto inline-flex">Features</p>
+      <h1 class="mx-auto mt-4 max-w-3xl text-balance text-4xl font-black tracking-[-0.03em] text-slate-950 sm:text-5xl">Every tool in your Revizely workspace.</h1>
+      <p class="mx-auto mt-4 max-w-2xl text-pretty text-lg leading-8 text-slate-600">Organised the same way as the app itself: Workspace to hold your material, Study to actively revise, and Career to look beyond the syllabus.</p>
+    </section>
+
+    <section id="workspace" class="mx-auto max-w-7xl px-5 pb-4 pt-10 sm:px-7 lg:px-8">
+      <h2 class="text-balance text-2xl font-black tracking-[-0.02em] text-slate-950 sm:text-3xl">Workspace</h2>
+      <p class="mt-2 max-w-xl text-base leading-7 text-slate-600">Where your material lives.</p>
+      <div class="feature-grid mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="feature-cell">
+          <span class="feature-icon bg-violet-100 text-violet-600"><svg viewBox="0 0 24 24" fill="none"><path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Exam Notes</h3>
+          <p>Organised notes by subject and topic, with clear highlights and searchable summaries.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-emerald-100 text-emerald-600"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h13a3 3 0 0 1 3 3v7H7a3 3 0 0 1-3-3V7Z" stroke="currentColor" stroke-width="2"/><path d="M8 11h7M8 15h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Flashcards</h3>
+          <p>Quiz mode, spaced repetition and review queues that keep the right cards in front of you.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-blue-100 text-blue-600"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v13H7V3Z" stroke="currentColor" stroke-width="2"/><path d="M14 3v6h5M10 14h6M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Past Papers</h3>
+          <p>Practise with timed papers, marked answers and a tidy record of your strongest topics.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-pink-100 text-pink-600"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><circle cx="5" cy="6" r="2" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="6" r="2" stroke="currentColor" stroke-width="2"/><circle cx="5" cy="18" r="2" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="18" r="2" stroke="currentColor" stroke-width="2"/><path d="M7 7.4 9.8 10M14.2 10 17 7.4M7 16.6 9.8 14M14.2 14 17 16.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Resource Library</h3>
+          <p>Keep saved AI lessons, study plans, feedback and original practice papers in one place.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-amber-100 text-amber-600"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m9 14 2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3>Homework Tracker</h3>
+          <p>Track assignments, due dates and completion from one clear view.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="study" class="mx-auto max-w-7xl px-5 pb-4 pt-14 sm:px-7 lg:px-8">
+      <h2 class="text-balance text-2xl font-black tracking-[-0.02em] text-slate-950 sm:text-3xl">Study</h2>
+      <p class="mt-2 max-w-xl text-base leading-7 text-slate-600">Where you actively revise.</p>
+      <div class="feature-grid mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="feature-cell">
+          <span class="feature-icon bg-pink-100 text-pink-600"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 1.6-2 3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="0.9" fill="currentColor"/></svg></span>
+          <h3>Quizzes</h3>
+          <p>Build and complete topic quizzes with instant scoring and saved attempts.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-amber-100 text-amber-600"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 1.6 4.7 5 .1-4 2.9 1.5 4.8-4.1-2.9-4.1 2.9 1.5-4.8-4-2.9 5-.1L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M20 17v3M18.5 18.5h3M4 17v3M2.5 18.5h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>AI Tutor</h3>
+          <p>Ask follow-up questions and receive clear, age-appropriate explanations.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-indigo-100 text-indigo-600"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13.5" r="7.5" stroke="currentColor" stroke-width="2"/><path d="M12 9.5v4l2.5 1.5M10 2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Focus Mode</h3>
+          <p>Run quiet timed revision blocks from 5 to 90 minutes, with no unnecessary distractions.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-violet-100 text-violet-600"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="2"/><path d="M4 10h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15" r="2" stroke="currentColor" stroke-width="2"/></svg></span>
+          <h3>AI-Powered Study Plans</h3>
+          <p>Build revision schedules around exam dates, available time and weak areas.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-emerald-100 text-emerald-600"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M4 19h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m7 15 4-5 4 3 5-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3>Progress Analytics</h3>
+          <p>Combine quiz and paper evidence to reveal strengths and weak subjects.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-blue-100 text-blue-600"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2.2" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="19" r="2.2" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="19" r="2.2" stroke="currentColor" stroke-width="2"/><path d="M12 7.2V12M12 12 7 17M12 12l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Mind Map Generator</h3>
+          <p>Turn a central topic and key points into a clear visual map.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-pink-100 text-pink-600"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Predicted Grades</h3>
+          <p>Estimate working grades from recorded quizzes and past papers.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-amber-100 text-amber-600"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4a6 6 0 0 1 6 6v6H6v-6a6 6 0 0 1 6-6Z" stroke="currentColor" stroke-width="2"/><path d="M4 20h16M12 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Cram Mode</h3>
+          <p>Prioritise weak subjects and urgent work when revision time is limited.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-indigo-100 text-indigo-600"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10v4a5 5 0 0 1-5 5 5 5 0 0 1-5-5V4Z" stroke="currentColor" stroke-width="2"/><path d="M5 5H3v2a4 4 0 0 0 4 4M19 5h2v2a4 4 0 0 1-4 4M10 13v3M14 13v3M8 20h8M9 20v-2h6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Friends, Challenges &amp; Leaderboard</h3>
+          <p>Add classmates by friend code, set shared challenges and compare revision points.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="career" class="mx-auto max-w-7xl px-5 pb-16 pt-14 sm:px-7 lg:px-8">
+      <h2 class="text-balance text-2xl font-black tracking-[-0.02em] text-slate-950 sm:text-3xl">Career</h2>
+      <p class="mt-2 max-w-xl text-base leading-7 text-slate-600">Where you look beyond the syllabus.</p>
+      <div class="feature-grid mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="feature-cell">
+          <span class="feature-icon bg-emerald-100 text-emerald-600"><svg viewBox="0 0 24 24" fill="none"><path d="M8 4c0 3-3 3-3 6a4 4 0 0 0 8 0c0-3-3-3-3-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16 8c0 3-3 3-3 6a4 4 0 0 0 8 0c0-3-3-3-3-6" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+          <h3>Extracurriculars</h3>
+          <p>Log clubs, teams, volunteering and leadership roles while you remember the detail.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-blue-100 text-blue-600"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <h3>Work Experience Tracker</h3>
+          <p>Organise opportunities, deadlines and application progress.</p>
+        </article>
+        <article class="feature-cell">
+          <span class="feature-icon bg-pink-100 text-pink-600"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v13H7V3Z" stroke="currentColor" stroke-width="2"/><circle cx="12.5" cy="12" r="1.8" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 18c.5-2 1.8-3 3-3s2.5 1 3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <h3>CV Builder</h3>
+          <p>Turn your school record, activities and skills into a clean, printable one-page CV.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-5 pb-16 sm:px-7 lg:px-8 lg:pb-20">
+      <div class="cta-panel flex flex-col gap-8 rounded-[28px] p-8 sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:p-14">
+        <div>
+          <p class="eyebrow">Ready to revise better?</p>
+          <h2 class="mt-3 max-w-2xl text-balance text-4xl font-black leading-tight tracking-[-0.035em] text-slate-950 sm:text-5xl">Transform your study habits without adding clutter.</h2>
+          <p class="mt-4 max-w-xl text-lg leading-8 text-slate-700">Join students who organise work, practise smarter and keep progress visible.</p>
+        </div>
+        <a href="public/signup.html" class="magnetic-btn group inline-flex min-h-14 shrink-0 items-center justify-center gap-3 rounded-2xl bg-slate-950 px-7 text-base font-bold text-white shadow-xl shadow-slate-950/20 transition hover:bg-slate-800">
+          Get Started for Free
+          <svg class="h-5 w-5 transition group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-100 bg-white px-5 py-12 sm:px-7 lg:px-8">
+    <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+      <div>
+        <a href="index.html" class="flex items-center gap-3 font-extrabold tracking-tight text-slate-950">
+          <img class="brand-logo brand-logo--small" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+          <span class="brand-wordmark">
+            <span class="leading-tight">Revizely.ai</span>
+            <small class="brand-slogan">Revise wisely with Revizely</small>
+          </span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-7 text-slate-500">Your all-in-one study workspace. Built for students, designed for organised success.</p>
+      </div>
+      <div class="footer-col"><h3>Product</h3><a href="features.html">Features</a><a href="public/signup.html">Get Started</a></div>
+      <div class="footer-col"><h3>Company</h3><a href="index.html#top">About Us</a><a href="contact.html">Contact</a></div>
+      <div class="footer-col"><h3>Legal</h3><a href="terms.html">Terms of Service</a><a href="refund.html">Refund Policy</a></div>
+    </div>
+    <div class="mx-auto mt-10 max-w-7xl border-t border-slate-100 pt-6 text-sm font-medium text-slate-400">&copy; 2026 Revizely.ai. All rights reserved.</div>
+  </footer>
+
+  <script>
+    const menuButton = document.getElementById("menuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    menuButton.addEventListener("click", () => {
+      const isOpen = !mobileMenu.classList.contains("hidden");
+      mobileMenu.classList.toggle("hidden", isOpen);
+      menuButton.classList.toggle("is-open", !isOpen);
+      menuButton.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    document.querySelectorAll("#mobileMenu a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.add("hidden");
+        menuButton.classList.remove("is-open");
+        menuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+  </script>
+  <script>
+    (function () {
+      var SUN = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var MOON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+      function current() {
+        return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      }
+
+      function paint() {
+        var dark = current() === "dark";
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+          button.innerHTML = dark ? SUN : MOON;
+          button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+        });
+      }
+
+      document.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-theme-toggle]");
+        if (!button) return;
+        var next = current() === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem("revizely-theme", next); } catch (error) { /* private mode */ }
+        paint();
+      });
+
+      paint();
+    })();
+  </script>
+</body>
+</html>

@@ -1,7 +1,10 @@
 # Revizely.ai
 
-An all-in-one AI study workspace for UK secondary-school revision: notes, flashcards,
-past papers, quizzes, progress tracking, focus timers and a set of AI-assisted tools.
+An all-in-one AI study workspace for UK secondary-school revision. The workspace is
+organised into three areas — **Workspace** (notes, flashcards, past papers, resources,
+homework), **Study** (quizzes, planner, AI tutor, focus mode, progress, friends,
+challenges, leaderboard) and **Career** (extracurriculars, work experience, CV builder)
+— with a streak and XP system, dark mode and a guided first-run setup.
 
 The project is deliberately dependency-free — no build step, no npm packages, no
 framework. It is a static front end plus a small Node backend built on `node:http`,
@@ -42,9 +45,9 @@ and it runs either as a long-lived Node server or as a Vercel serverless functio
 │   │   ├── auth.js       Posts to /api/auth/*, redirects into the workspace
 │   │   └── auth.css
 │   └── app/              The authenticated workspace (single page, hash-routed)
-│       ├── index.html
-│       ├── app.js        All workspace views; talks to /api/* with session cookies
-│       └── app.css
+│       ├── index.html    Shell: Workspace/Study/Career nav, header, theme bootstrap
+│       ├── app.js        All workspace views, onboarding, XP, streaks, theme
+│       └── app.css       Tokenised palette with a full dark theme
 │
 ├── backend/              All server code — never served to the browser
 │   ├── index.js          Local HTTP server (static files + API)
@@ -80,6 +83,32 @@ can never be fetched as a static file.
 The front end is plain, module-free JavaScript loaded with `<script>` tags. Tailwind,
 Lucide icons and three.js are pulled from CDNs at runtime, so the pages need internet
 access to render fully.
+
+### Feature tour
+
+| Area | What it covers |
+|---|---|
+| **Onboarding** | A four-step first-run flow captures name, year group, qualification (GCSE / IGCSE / A-Level / SAT), subjects and a daily study target. It blocks the workspace until finished and never reappears once `profile.onboarded` is set. |
+| **Streaks** | A day is "active" once the student completes anything. Consecutive days increment; a streak lapses only after two clear days, so opening the app the next morning keeps yesterday's run. |
+| **XP and levels** | Every completed action awards XP (see the table below), shown as a floating `+N XP` reward and a running total beside the streak in the header and on the dashboard. Levels cost 100 XP more than the last (100, 300, 600, 1000 …). |
+| **Friends and challenges** | Students swap six-character friend codes, then set shared targets measured in XP, tasks, focus sessions or quiz attempts. Standings update from live workspace data. |
+| **Career** | Extracurriculars log role, category, hours and leadership status; work experience tracks applications and deadlines; the CV builder assembles a printable one-page CV and can pull activities straight in. |
+| **Dark mode** | Three settings — light, dark and system. The choice is stored in `localStorage` and applied by an inline script before first paint, so there is no light flash, and it carries across the marketing site, the auth pages and the workspace. |
+| **Roles and portals** | `CREATOR_EMAILS` and `ADMIN_EMAILS` grant extra dashboards in Settings. Roles are re-evaluated on every login. |
+
+#### XP awards
+
+| Action | XP | Action | XP |
+|---|---|---|---|
+| Complete a quiz | 25 | Log a past paper | 15 |
+| Finish a focus session | 15 | Complete a task | 10 |
+| Add an extracurricular | 10 | Add a work-experience opportunity | 10 |
+| Create a note | 5 | Create a flashcard deck | 5 |
+| Add a flashcard | 2 | | |
+
+XP is awarded once per item — un-ticking and re-ticking a task does not pay twice.
+The award table lives in both `backend/store.js` and `frontend/app/app.js`; keep the
+two in step if you change it.
 
 ---
 
@@ -147,6 +176,8 @@ on Vercel. All of them are optional — the app boots without any of them.
 | `PORT` | No | `4173` | Port for the local server. Ignored on Vercel. |
 | `GROQ_API_KEY` | For AI features | — | Groq API key. Create one at [console.groq.com/keys](https://console.groq.com/keys). |
 | `GROQ_MODEL` | No | `llama-3.3-70b-versatile` | Which Groq model the AI tools call. |
+| `CREATOR_EMAILS` | No | — | Comma-separated emails granted the creator dashboard. |
+| `ADMIN_EMAILS` | No | — | Comma-separated emails granted the admin dashboard. |
 | `STRIPE_CHECKOUT_WEEKLY_URL` | For payments | — | Stripe Payment Link for the £0.99/week plan. |
 | `STRIPE_CHECKOUT_MONTHLY_URL` | For payments | — | Stripe Payment Link for the £3.99/month plan. |
 | `STRIPE_CHECKOUT_YEARLY_URL` | For payments | — | Stripe Payment Link for the £25/year plan. |
@@ -291,8 +322,15 @@ cookie set at sign-up or log-in and reject unauthenticated callers with `401`.
 | `GET` | `/api/leaderboard` | Top 50 users by revision points. |
 | `GET` | `/api/classes` | Competition classes the user belongs to. |
 | `POST` | `/api/classes` | `{ action: "create", name }` or `{ action: "join", code }`. |
+| `GET` | `/api/friends` | Your friends (with points, XP and streak) plus your own friend code. |
+| `POST` | `/api/friends` | `{ action: "add", code }` or `{ action: "remove", id }`. |
+| `GET` | `/api/challenges` | Challenges you have joined, with live standings. |
+| `POST` | `/api/challenges` | `{ action: "create", title, metric, target, days }`, or `{ action: "join" \| "leave", id }`. |
+| `GET` | `/api/challenges/open` | Challenges started by friends that you have not joined. |
 | `GET` | `/api/premium/status` | Current subscription state. |
 | `POST` | `/api/premium/checkout` | `{ plan: "weekly" \| "monthly" \| "yearly" }` → Stripe URL. |
+| `POST` | `/api/premium/cancel` | Returns the account to the free plan. |
+| `DELETE` | `/api/account` | Deletes the account, workspace, friend links and challenge memberships, then clears the session. |
 
 ### AI (requires `GROQ_API_KEY`)
 
@@ -319,6 +357,10 @@ returns `429`.
 | Pricing buttons say payments need checkout links | The `STRIPE_CHECKOUT_*_URL` variables are unset. |
 | Social sign-in buttons do nothing useful | Expected — they return `501` until real OAuth credentials are wired up. |
 | Page renders unstyled | Tailwind, Lucide and three.js load from CDNs; check the network connection or console. |
+| Onboarding keeps reappearing | It clears once `profile.onboarded` is saved. On Vercel the in-memory workspace can be lost between requests, so the flow restarts — see the section above. |
+| Creator or admin portal missing from Settings | Add the account's email to `CREATOR_EMAILS` / `ADMIN_EMAILS`, then sign out and back in; roles are read at login. |
+| Theme resets between pages | The choice lives in `localStorage` under `revizely-theme`. A private window or blocked site data makes it fall back to the system setting. |
+| Streak did not increase | A streak advances once per day and only after you complete something. Two clear days ends it. |
 | `EADDRINUSE` on start | Port 4173 is taken. Use `PORT=3000 npm start`. |
 
 ---

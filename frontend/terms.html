@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service | Revizely.ai</title>
+  <meta name="description" content="The terms and conditions governing use of the Revizely.ai website and services." />
+  <link rel="icon" type="image/svg+xml" href="assets/revizely-logo.svg" />
+  <link rel="icon" type="image/png" href="assets/revizely-logo.png" />
+  <link rel="apple-touch-icon" href="assets/revizely-logo.png" />
+  <script>
+    // Applied before first paint so a dark-mode visitor never sees a light flash.
+    (function () {
+      try {
+        var stored = localStorage.getItem("revizely-theme") || "system";
+        var dark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="global.css" />
+</head>
+<body class="bg-white font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-2xl transition-shadow duration-300">
+    <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-7 lg:px-8" aria-label="Primary navigation">
+      <a href="index.html" class="group flex items-center gap-3 font-extrabold tracking-tight text-slate-950" aria-label="Revizely.ai home">
+        <img class="brand-logo" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+        <span class="brand-wordmark">
+          <span class="text-lg leading-tight">Revizely.ai</span>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
+      </a>
+
+      <div class="hidden items-center gap-3 md:flex">
+        <button type="button" data-theme-toggle class="theme-toggle" aria-label="Switch theme" title="Switch theme"></button>
+        <a href="public/login.html" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Log in</a>
+        <a href="public/signup.html" class="magnetic-btn rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-slate-800">Get Started</a>
+      </div>
+
+      <button type="button" data-theme-toggle class="theme-toggle md:hidden" aria-label="Switch theme" title="Switch theme"></button>
+      <button id="menuButton" class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm md:hidden" aria-label="Open menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-slate-100 bg-white/96 px-5 py-4 shadow-xl shadow-slate-950/5 md:hidden">
+      <div class="mx-auto flex max-w-7xl flex-col gap-2">
+        <a class="mobile-link" href="public/login.html">Log in</a>
+        <a class="mt-2 rounded-xl bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white" href="public/signup.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="mx-auto max-w-3xl px-5 pb-20 pt-32 sm:px-7 sm:pt-36 lg:px-8">
+      <p class="eyebrow inline-flex">Legal</p>
+      <h1 class="mt-4 text-balance text-4xl font-black tracking-[-0.03em] text-slate-950 sm:text-5xl">Terms of Service</h1>
+      <p class="mt-4 text-base font-semibold text-slate-500">REVIZELY LTD &middot; Company number 17046803</p>
+
+      <div class="legal-doc mt-10">
+<h2>1. About us and these terms</h2>
+<p>1.1 These Terms and Conditions (&quot;Terms&quot;) govern your access to and use of the REVIZELY website, web application and related services located at www.revizely.ai (the &quot;Website&quot;) and any content, materials, products or services offered through it (together, the &quot;Services&quot;).</p>
+<p>1.2 The Website is operated by REVIZELY LTD, a company registered in the United Kingdom with company number 17046803 and registered office at 61 Bridge Street, Kington, HR5 3DJ (&quot;REVIZELY&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;).</p>
+<p>1.3 By accessing or using the Website or Services, you agree to be bound by these Terms. If you do not agree, you must not use the Website or Services.</p>
+<p>1.4 We may revise these Terms from time to time. The latest version will always be available on the Website and will apply from the date of publication. If you continue to use the Website after changes are posted, you will be deemed to have accepted the updated Terms.</p>
+<h2>2. Eligibility and accounts</h2>
+<p>2.1 You must be at least 13 years old, or have the consent of a parent or legal guardian, to create an account and use the Services.</p>
+<p>2.2 When you create an account, you must provide accurate, current and complete information and keep this information up to date.</p>
+<p>2.3 You are responsible for maintaining the confidentiality of your login details (including username and password) and for all activities that occur under your account. You must not share your account details with anyone else.</p>
+<p>2.4 We reserve the right to suspend, restrict or terminate any account at any time if, in our reasonable opinion, you have breached these Terms, created risk or possible legal exposure for us, or for any other reasonable business purpose.</p>
+<h2>3. Subscription services and payments</h2>
+<p>3.1 Certain content and features on REVIZELY are available only to paying subscribers (&quot;Subscription&quot;). Details of Subscription plans, pricing and term lengths are described on the Website from time to time.</p>
+<p>3.2 By starting a Subscription, you authorise us and our third-party payment processors (including Wise and Stripe) to charge you the Subscription fee and any applicable taxes at the rate notified to you at the time of purchase.</p>
+<p>3.3 Unless otherwise stated, Subscriptions are provided on a recurring basis (e.g. monthly, termly, annually) and will automatically renew at the end of each billing period, using the payment method you provided, until you cancel.</p>
+<p>3.4 You can cancel your Subscription at any time via your account settings or by contacting us at hello@revizely.ai. Cancellation will take effect at the end of your current billing period, and you will retain access to paid features until that date. We do not provide pro-rated refunds for unused periods unless required by applicable law or explicitly stated otherwise in writing.</p>
+<p>3.5 We may change our Subscription prices or structure from time to time. Any changes will take effect at the start of your next billing period and we will give you reasonable prior notice where required. If you do not agree to the change, you may cancel your Subscription before the new price takes effect.</p>
+<p>3.6 You are responsible for ensuring that your payment information is correct and that you have sufficient funds or credit available. If payment is not successfully processed, we may suspend or terminate your Subscription and/or account.</p>
+<h2>4. Use of the Website and Services</h2>
+<p>4.1 The Website and Services are provided for personal, non-commercial use for educational and revision purposes only, unless we expressly agree otherwise in writing.</p>
+<p>4.2 You agree that you will not:</p>
+<ul>
+<li>Use the Website for any unlawful purpose or in breach of any applicable local, national or international law or regulation.</li>
+<li>Copy, reproduce, distribute, sell, resell, or exploit any part of the Website or its content for commercial purposes without our prior written consent.</li>
+<li>Attempt to circumvent or bypass any access or usage restrictions or security measures on the Website.</li>
+<li>Upload, post or transmit any content that is unlawful, defamatory, obscene, harassing, discriminatory, infringing or otherwise objectionable.</li>
+<li>Use any automated system, including &quot;bots,&quot; &quot;scrapers&quot; or similar technologies, to access the Website without our prior written permission, except for bona fide search engine indexing.</li>
+</ul>
+<p>4.3 We may monitor use of the Website and remove or disable access to any content that we reasonably believe breaches these Terms or applicable law.</p>
+<h2>5. Intellectual property</h2>
+<p>5.1 All content on the Website, including (without limitation) text, questions, model answers, explanations, diagrams, videos, images, graphics, logos, icons, user interface design and software code, is owned by or licensed to REVIZELY and is protected by copyright, trade marks and other intellectual property rights.</p>
+<p>5.2 Subject to your compliance with these Terms and payment of any applicable Subscription fees, we grant you a limited, non-exclusive, non-transferable, revocable licence to access and use the Website and Services for your own personal, non-commercial educational use only.</p>
+<p>5.3 You must not:</p>
+<ul>
+<li>Copy, reproduce, modify, adapt, translate, create derivative works of, distribute, transmit, sell, lease, or otherwise exploit the content or any part of the Website, except as expressly permitted in these Terms.</li>
+<li>Remove, alter or obscure any copyright, trade mark or other proprietary rights notices on the Website or in any of its content.</li>
+</ul>
+<p>5.4 All trade marks, logos and trade names displayed on the Website (including &quot;REVIZELY&quot; and any related marks) are the property of REVIZELY or their respective owners. You may not use these marks without our prior written consent.</p>
+<h2>6. User-generated content</h2>
+<p>6.1 You may be able to submit, upload, post or otherwise share content on or through the Website (for example, comments, questions, answers, notes or other materials) (&quot;User Content&quot;).</p>
+<p>6.2 You remain the owner of any intellectual property rights you hold in your User Content. However, by submitting User Content, you grant REVIZELY a worldwide, non-exclusive, royalty-free, transferable, sub-licensable licence to use, host, store, reproduce, modify, create derivative works of, communicate, publish, publicly display and distribute your User Content in connection with operating, improving and promoting the Website and Services.</p>
+<p>6.3 You are solely responsible for your User Content and for ensuring that it:</p>
+<ul>
+<li>Is accurate and not misleading.</li>
+<li>Does not infringe any copyright, trade mark, moral right, privacy, data protection or other rights of any third party.</li>
+<li>Is lawful and not defamatory, obscene, harassing, hateful, discriminatory or otherwise objectionable.</li>
+</ul>
+<p>6.4 We may remove or disable access to any User Content at any time, without notice, if we reasonably believe it breaches these Terms or applicable law.</p>
+<h2>7. No guarantee of exam results</h2>
+<p>7.1 REVIZELY provides revision resources, practice questions, model answers, explanations and related content for educational support only.</p>
+<p>7.2 We do not guarantee that use of the Website or Services will result in any particular exam grade, academic outcome, admission to an institution, or other result.</p>
+<p>7.3 You remain responsible for your own learning, exam preparation and performance, including checking that any materials are suitable for your specific exam board, syllabus and year.</p>
+<h2>8. Availability, changes and suspension</h2>
+<p>8.1 We do not guarantee that the Website or any content will always be available or uninterrupted. We may suspend, withdraw or restrict the availability of all or any part of the Website for business or operational reasons.</p>
+<p>8.2 We may update or change the Website, the Services or any content at any time, for example to reflect changes to our users&#x27; needs, exam specifications, or our business priorities.</p>
+<p>8.3 We will try to give you reasonable notice of any significant changes that materially affect your existing Subscription, where practicable.</p>
+<h2>9. Disclaimers</h2>
+<p>9.1 The Website and Services are provided on an &quot;as is&quot; and &quot;as available&quot; basis and are intended for general information and educational purposes only.</p>
+<p>9.2 To the fullest extent permitted by law, we disclaim all warranties, representations or conditions, whether express or implied, including (without limitation) implied warranties of satisfactory quality, fitness for a particular purpose, accuracy, completeness and non-infringement.</p>
+<p>9.3 While we take reasonable steps to ensure that content is accurate and up to date, we do not warrant that any content is complete, current or error-free, or that it will always reflect the latest exam specifications or mark schemes.</p>
+<h2>10. Limitation of liability</h2>
+<p>10.1 Nothing in these Terms excludes or limits any liability that cannot be excluded or limited under applicable law, including liability for death or personal injury caused by our negligence, or for fraud or fraudulent misrepresentation.</p>
+<p>10.2 Subject to clause 10.1, we shall not be liable to you, whether in contract, tort (including negligence), breach of statutory duty, or otherwise, arising out of or in connection with these Terms, for:</p>
+<ul>
+<li>Any loss of profits, loss of revenue, loss of anticipated savings, loss of business or loss of opportunity.</li>
+<li>Any loss of data, corruption of data, or loss of goodwill or reputation.</li>
+<li>Any indirect or consequential loss or damage.</li>
+</ul>
+<p>10.3 Subject to clause 10.1, our total aggregate liability to you in respect of all losses arising under or in connection with your use of the Website and Services shall in no circumstances exceed the greater of (a) the total amount you have paid to us in Subscription fees in the twelve (12) months preceding the event giving rise to the claim, and (b) £100.</p>
+<p>10.4 You are responsible for ensuring that your devices and software are compatible with the Website and for implementing appropriate security measures (such as anti-virus software and secure passwords).</p>
+<h2>11. Indemnity</h2>
+<p>11.1 You agree to indemnify and hold harmless REVIZELY, its directors, officers, employees and contractors from and against any and all claims, liabilities, damages, losses, costs and expenses (including reasonable legal fees) arising out of or in connection with:</p>
+<ul>
+<li>Your breach of these Terms.</li>
+<li>Your use of the Website or Services.</li>
+<li>Your User Content.</li>
+</ul>
+<h2>12. Third-party links and services</h2>
+<p>12.1 The Website may contain links to third-party websites or services that are not owned or controlled by us.</p>
+<p>12.2 We have no control over, and assume no responsibility for, the content, privacy policies or practices of any third-party websites or services. You access any third-party sites at your own risk.</p>
+<h2>13. Termination</h2>
+<p>13.1 We may suspend or terminate your access to the Website or any part of the Services at any time if you materially breach these Terms, misuse the Website, or if required to do so by law or regulatory authority.</p>
+<p>13.2 Upon termination, your right to use the Services will immediately cease. Any provisions of these Terms which by their nature should reasonably survive termination shall survive, including but not limited to clauses relating to intellectual property, liability, indemnity and governing law.</p>
+<h2>14. Governing law and jurisdiction</h2>
+<p>14.1 These Terms, their subject matter and their formation are governed by the laws of England and Wales.</p>
+<p>14.2 You and we agree that the courts of England and Wales shall have exclusive jurisdiction to resolve any dispute or claim arising out of or in connection with these Terms or your use of the Website, except that if you are a consumer resident in another part of the UK, you may bring proceedings in your local courts as required by consumer law.</p>
+<h2>15. Contact us</h2>
+<p>15.1 If you have any questions about these Terms, please contact us at:<br>
+Email: hello@revizely.ai<br>
+Postal address: 61 Bridge Street, Kington, HR5 3DJ</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-100 bg-white px-5 py-12 sm:px-7 lg:px-8">
+    <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+      <div>
+        <a href="index.html" class="flex items-center gap-3 font-extrabold tracking-tight text-slate-950">
+          <img class="brand-logo brand-logo--small" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+          <span class="brand-wordmark">
+            <span class="leading-tight">Revizely.ai</span>
+            <small class="brand-slogan">Revise wisely with Revizely</small>
+          </span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-7 text-slate-500">Your all-in-one study workspace. Built for students, designed for organised success.</p>
+      </div>
+      <div class="footer-col"><h3>Product</h3><a href="features.html">Features</a><a href="public/signup.html">Get Started</a></div>
+      <div class="footer-col"><h3>Company</h3><a href="index.html#top">About Us</a><a href="contact.html">Contact</a></div>
+      <div class="footer-col"><h3>Legal</h3><a href="terms.html">Terms of Service</a><a href="refund.html">Refund Policy</a></div>
+    </div>
+    <div class="mx-auto mt-10 max-w-7xl border-t border-slate-100 pt-6 text-sm font-medium text-slate-400">&copy; 2026 Revizely.ai. All rights reserved.</div>
+  </footer>
+
+  <script>
+    const menuButton = document.getElementById("menuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    menuButton.addEventListener("click", () => {
+      const isOpen = !mobileMenu.classList.contains("hidden");
+      mobileMenu.classList.toggle("hidden", isOpen);
+      menuButton.classList.toggle("is-open", !isOpen);
+      menuButton.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    document.querySelectorAll("#mobileMenu a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.add("hidden");
+        menuButton.classList.remove("is-open");
+        menuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+  </script>
+  <script>
+    // Shared theme switch for the public pages. The workspace writes the same
+    // localStorage key, so a student's choice follows them across the site.
+    (function () {
+      var SUN = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var MOON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+      function current() {
+        return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      }
+
+      function paint() {
+        var dark = current() === "dark";
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+          button.innerHTML = dark ? SUN : MOON;
+          button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+        });
+      }
+
+      document.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-theme-toggle]");
+        if (!button) return;
+        var next = current() === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem("revizely-theme", next); } catch (error) { /* private mode */ }
+        paint();
+      });
+
+      paint();
+    })();
+  </script>
+</body>
+</html>

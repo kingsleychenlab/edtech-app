@@ -9,6 +9,21 @@ function cookieAttributes(maxAge) {
   return `HttpOnly; Path=/; SameSite=Lax; Max-Age=${maxAge}${SECURE_COOKIE ? "; Secure" : ""}`;
 }
 
+// Roles are granted by email allow-list so the creator and admin portals can be
+// opened to specific accounts without a user-management UI.
+function rolesFor(email) {
+  const roles = ["student"];
+  const listed = (key) =>
+    String(process.env[key] || "")
+      .split(",")
+      .map((entry) => entry.trim().toLowerCase())
+      .filter(Boolean)
+      .includes(email);
+  if (listed("CREATOR_EMAILS")) roles.push("creator");
+  if (listed("ADMIN_EMAILS")) roles.push("admin");
+  return roles;
+}
+
 function normaliseEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -53,11 +68,18 @@ function clearSession(request, response) {
 }
 
 function publicUser(user) {
-  return { id: user.id, name: user.name, email: user.email };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    friendCode: user.friendCode,
+    roles: user.roles || ["student"]
+  };
 }
 
 module.exports = {
   clearSession,
+  rolesFor,
   createSession,
   getSessionUser,
   hashPassword,

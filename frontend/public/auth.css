@@ -1,6 +1,60 @@
+/* The auth pages share the workspace palette so a dark-mode student lands on a
+   dark sign-in screen. Tokens mirror app.css; see global.css for the toggle. */
+:root {
+  --auth-ink: #0f172a;
+  --auth-body: #334155;
+  --auth-muted: #64748b;
+  --auth-faint: #94a3b8;
+  --auth-panel: #ffffff;
+  --auth-soft: #f8fafc;
+  --auth-soft-strong: #f1f5f9;
+  --auth-line: #dbe2ea;
+  --auth-line-soft: #e2e8f0;
+  --auth-line-bold: #cbd5e1;
+  --auth-indigo: #4f46e5;
+  --auth-indigo-deep: #4338ca;
+  --auth-indigo-deepest: #3730a3;
+  --auth-indigo-light: #818cf8;
+  --auth-indigo-soft: #eef2ff;
+  --auth-invert-bg: #0a0a0c;
+  --auth-invert-bg-hover: #202027;
+  --auth-invert-fg: #ffffff;
+  --auth-glass: rgb(255 255 255 / 0.9);
+  --auth-glass-strong: rgb(255 255 255 / 0.94);
+  --auth-glass-soft: rgb(255 255 255 / 0.8);
+  --auth-glass-faint: rgb(255 255 255 / 0.72);
+  --auth-stage-gradient: linear-gradient(128deg, #b8cdf4 0%, #dbe2fb 34%, #ece6ff 64%, #d7c1fb 100%);
+}
+
+:root[data-theme="dark"] {
+  --auth-ink: #f1f5f9;
+  --auth-body: #cbd5e1;
+  --auth-muted: #94a3b8;
+  --auth-faint: #8595ad;
+  --auth-panel: #151b2e;
+  --auth-soft: #1a2237;
+  --auth-soft-strong: #202940;
+  --auth-line: #38436a;
+  --auth-line-soft: #313b5c;
+  --auth-line-bold: #46527d;
+  --auth-indigo: #818cf8;
+  --auth-indigo-deep: #a5b4fc;
+  --auth-indigo-deepest: #c7d2fe;
+  --auth-indigo-light: #6366f1;
+  --auth-indigo-soft: #222b4d;
+  --auth-invert-bg: #e8edf5;
+  --auth-invert-bg-hover: #d3dbe8;
+  --auth-invert-fg: #0b1020;
+  --auth-glass: rgb(21 27 46 / 0.9);
+  --auth-glass-strong: rgb(21 27 46 / 0.95);
+  --auth-glass-soft: rgb(21 27 46 / 0.82);
+  --auth-glass-faint: rgb(26 34 55 / 0.74);
+  --auth-stage-gradient: linear-gradient(128deg, #16233f 0%, #1b2547 34%, #272052 64%, #33245e 100%);
+}
+
 .auth-shell {
   min-height: 100vh;
-  background: #fff;
+  background: var(--auth-panel);
 }
 
 .auth-main {
@@ -18,21 +72,21 @@
   min-height: 42rem;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.8);
+  border: 1px solid var(--auth-glass-soft);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 14% 22%, rgb(255 255 255 / 0.72), transparent 28%),
+    radial-gradient(circle at 14% 22%, var(--auth-glass-faint), transparent 28%),
     radial-gradient(circle at 84% 40%, rgb(190 142 255 / 0.36), transparent 28%),
-    linear-gradient(128deg, #b8cdf4 0%, #dbe2fb 34%, #ece6ff 64%, #d7c1fb 100%);
+    var(--auth-stage-gradient);
   box-shadow: 0 18px 70px rgb(91 91 214 / 0.12);
   padding: 2rem;
 }
 
 .auth-card {
   width: min(100%, 31rem);
-  border: 1px solid rgb(255 255 255 / 0.9);
+  border: 1px solid var(--auth-glass);
   border-radius: 20px;
-  background: rgb(255 255 255 / 0.94);
+  background: var(--auth-glass-strong);
   box-shadow: 0 20px 60px rgb(55 48 128 / 0.14);
   backdrop-filter: blur(18px);
   padding: 2.25rem;
@@ -40,7 +94,7 @@
 
 .auth-heading {
   margin-top: 0.75rem;
-  color: #0f172a;
+  color: var(--auth-ink);
   font-size: clamp(1.9rem, 5vw, 2.35rem);
   font-weight: 900;
   line-height: 1.12;
@@ -49,7 +103,7 @@
 
 .auth-copy {
   margin-top: 0.75rem;
-  color: #64748b;
+  color: var(--auth-muted);
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1.65;
@@ -68,10 +122,10 @@
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--auth-line-soft);
   border-radius: 12px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--auth-panel);
+  color: var(--auth-ink);
   font-size: 0.9rem;
   font-weight: 800;
   transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
@@ -82,8 +136,8 @@
 }
 
 .social-btn:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  border-color: var(--auth-line-bold);
+  background: var(--auth-soft);
   transform: translateY(-1px);
 }
 
@@ -106,7 +160,7 @@
   align-items: center;
   gap: 0.8rem;
   margin: 1.35rem 0;
-  color: #94a3b8;
+  color: var(--auth-faint);
   font-size: 0.75rem;
   font-weight: 800;
 }
@@ -115,7 +169,7 @@
 .divider::after {
   content: "";
   height: 1px;
-  background: #e2e8f0;
+  background: var(--auth-line-soft);
 }
 
 .auth-form {
@@ -125,7 +179,7 @@
 
 .field-label {
   display: block;
-  color: #334155;
+  color: var(--auth-body);
   font-size: 0.84rem;
   font-weight: 800;
 }
@@ -134,11 +188,11 @@
   width: 100%;
   min-height: 3.15rem;
   margin-top: 0.45rem;
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--auth-line);
   border-radius: 12px;
-  background: #fff;
+  background: var(--auth-panel);
   padding: 0 0.95rem;
-  color: #0f172a;
+  color: var(--auth-ink);
   font-size: 0.94rem;
   font-weight: 600;
   outline: none;
@@ -146,11 +200,11 @@
 }
 
 .auth-input::placeholder {
-  color: #94a3b8;
+  color: var(--auth-faint);
 }
 
 .auth-input:focus {
-  border-color: #818cf8;
+  border-color: var(--auth-indigo-light);
   box-shadow: 0 0 0 4px rgb(99 102 241 / 0.11);
 }
 
@@ -170,14 +224,14 @@
   transform: translateY(-50%);
   border-radius: 8px;
   padding: 0.45rem 0.6rem;
-  color: #64748b;
+  color: var(--auth-muted);
   font-size: 0.76rem;
   font-weight: 800;
 }
 
 .password-toggle:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--auth-soft-strong);
+  color: var(--auth-ink);
 }
 
 .form-row {
@@ -185,7 +239,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  color: #64748b;
+  color: var(--auth-muted);
   font-size: 0.82rem;
   font-weight: 700;
 }
@@ -194,7 +248,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.55rem;
-  color: #64748b;
+  color: var(--auth-muted);
   font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.55;
@@ -205,23 +259,23 @@
   height: 1rem;
   margin-top: 0.12rem;
   flex: none;
-  accent-color: #4f46e5;
+  accent-color: var(--auth-indigo);
 }
 
 .auth-link {
-  color: #4f46e5;
+  color: var(--auth-indigo);
   font-weight: 800;
 }
 
 .auth-link:hover {
-  color: #3730a3;
+  color: var(--auth-indigo-deepest);
 }
 
 .auth-submit {
   min-height: 3.2rem;
   border-radius: 12px;
-  background: #0a0a0c;
-  color: #fff;
+  background: var(--auth-invert-bg);
+  color: var(--auth-panel);
   font-size: 0.92rem;
   font-weight: 850;
   box-shadow: 0 12px 28px rgb(10 10 12 / 0.18);
@@ -229,13 +283,13 @@
 }
 
 .auth-submit:hover {
-  background: #202027;
+  background: var(--auth-invert-bg-hover);
   transform: translateY(-1px);
 }
 
 .auth-footer {
   margin-top: 1.35rem;
-  color: #64748b;
+  color: var(--auth-muted);
   font-size: 0.84rem;
   font-weight: 700;
   text-align: center;
@@ -244,9 +298,9 @@
 .auth-note {
   margin-top: 1rem;
   border-radius: 10px;
-  background: #eef2ff;
+  background: var(--auth-indigo-soft);
   padding: 0.7rem 0.85rem;
-  color: #4338ca;
+  color: var(--auth-indigo-deep);
   font-size: 0.82rem;
   font-weight: 750;
   text-align: center;

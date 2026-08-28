@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refund Policy | Revizely.ai</title>
+  <meta name="description" content="Revizely.ai's refund policy for premium subscriptions." />
+  <link rel="icon" type="image/svg+xml" href="assets/revizely-logo.svg" />
+  <link rel="icon" type="image/png" href="assets/revizely-logo.png" />
+  <link rel="apple-touch-icon" href="assets/revizely-logo.png" />
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("revizely-theme") || "system";
+        var dark = stored === "dark" || (stored === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="global.css" />
+</head>
+<body class="bg-white font-sans text-slate-950 antialiased selection:bg-indigo-200 selection:text-indigo-950">
+  <header id="siteHeader" class="fixed inset-x-0 top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-2xl transition-shadow duration-300">
+    <nav class="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-7 lg:px-8" aria-label="Primary navigation">
+      <a href="index.html" class="group flex items-center gap-3 font-extrabold tracking-tight text-slate-950" aria-label="Revizely.ai home">
+        <img class="brand-logo" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+        <span class="brand-wordmark">
+          <span class="text-lg leading-tight">Revizely.ai</span>
+          <small class="brand-slogan">Revise wisely with Revizely</small>
+        </span>
+      </a>
+
+      <div class="hidden items-center gap-3 md:flex">
+        <button type="button" data-theme-toggle class="theme-toggle" aria-label="Switch theme" title="Switch theme"></button>
+        <a href="public/login.html" class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950">Log in</a>
+        <a href="public/signup.html" class="magnetic-btn rounded-xl bg-slate-950 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-950/15 transition hover:-translate-y-0.5 hover:bg-slate-800">Get Started</a>
+      </div>
+
+      <button type="button" data-theme-toggle class="theme-toggle md:hidden" aria-label="Switch theme" title="Switch theme"></button>
+      <button id="menuButton" class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-950 shadow-sm md:hidden" aria-label="Open menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+      </button>
+    </nav>
+
+    <div id="mobileMenu" class="hidden border-t border-slate-100 bg-white/96 px-5 py-4 shadow-xl shadow-slate-950/5 md:hidden">
+      <div class="mx-auto flex max-w-7xl flex-col gap-2">
+        <a class="mobile-link" href="public/login.html">Log in</a>
+        <a class="mt-2 rounded-xl bg-slate-950 px-4 py-3 text-center text-sm font-bold text-white" href="public/signup.html">Get Started</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="mx-auto max-w-3xl px-5 pb-20 pt-32 sm:px-7 sm:pt-36 lg:px-8">
+      <p class="eyebrow inline-flex">Legal</p>
+      <h1 class="mt-4 text-balance text-4xl font-black tracking-[-0.03em] text-slate-950 sm:text-5xl">Digital Services Refund Policy</h1>
+      <p class="mt-4 text-base font-semibold text-slate-500">Revizely.ai provides digital subscription services</p>
+
+      <div class="legal-doc mt-10">
+        <p class="lede">Since Revizely.ai is a digital service providing access to online study tools and features, we operate under specific refund policies designed for digital products.</p>
+
+        <h2>Premium Subscription Refunds</h2>
+
+        <h3>14-Day Cooling-Off Period</h3>
+        <p>Under UK consumer law, you may cancel within 14 days of each purchase or renewal and receive a full refund. After that period, you can still cancel from Settings, but premium access continues until the end of your billing period and no refund is issued.</p>
+
+        <h3>How to Cancel or Request a Refund</h3>
+        <p>Go to Settings &rarr; Subscription to cancel premium. If you are within the 14-day cooling-off period, a full refund is processed automatically when you cancel. Refunds typically appear within 5&ndash;10 business days on your original payment method.</p>
+
+        <h3>Cancellation Policy</h3>
+        <p>You may cancel your Premium subscription at any time from your account settings. Cancellation will take effect at the end of your current billing period. You will continue to have access to Premium features until the end of your paid period.</p>
+
+        <p class="callout"><strong>Important:</strong> Cancelling your subscription does not automatically entitle you to a refund for the current billing period. Refunds are only available within the 14-day money-back guarantee period for new subscriptions.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-100 bg-white px-5 py-12 sm:px-7 lg:px-8">
+    <div class="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.4fr_repeat(4,1fr)]">
+      <div>
+        <a href="index.html" class="flex items-center gap-3 font-extrabold tracking-tight text-slate-950">
+          <img class="brand-logo brand-logo--small" src="assets/revizely-logo.png" alt="Revizely.ai logo" />
+          <span class="brand-wordmark">
+            <span class="leading-tight">Revizely.ai</span>
+            <small class="brand-slogan">Revise wisely with Revizely</small>
+          </span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-7 text-slate-500">Your all-in-one study workspace. Built for students, designed for organised success.</p>
+      </div>
+      <div class="footer-col"><h3>Product</h3><a href="features.html">Features</a><a href="public/signup.html">Get Started</a></div>
+      <div class="footer-col"><h3>Company</h3><a href="index.html#top">About Us</a><a href="contact.html">Contact</a></div>
+      <div class="footer-col"><h3>Legal</h3><a href="terms.html">Terms of Service</a><a href="refund.html">Refund Policy</a></div>
+    </div>
+    <div class="mx-auto mt-10 max-w-7xl border-t border-slate-100 pt-6 text-sm font-medium text-slate-400">&copy; 2026 Revizely.ai. All rights reserved.</div>
+  </footer>
+
+  <script>
+    const menuButton = document.getElementById("menuButton");
+    const mobileMenu = document.getElementById("mobileMenu");
+
+    menuButton.addEventListener("click", () => {
+      const isOpen = !mobileMenu.classList.contains("hidden");
+      mobileMenu.classList.toggle("hidden", isOpen);
+      menuButton.classList.toggle("is-open", !isOpen);
+      menuButton.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    document.querySelectorAll("#mobileMenu a").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileMenu.classList.add("hidden");
+        menuButton.classList.remove("is-open");
+        menuButton.setAttribute("aria-expanded", "false");
+      });
+    });
+  </script>
+  <script>
+    (function () {
+      var SUN = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+      var MOON = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+
+      function current() {
+        return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+      }
+
+      function paint() {
+        var dark = current() === "dark";
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+          button.innerHTML = dark ? SUN : MOON;
+          button.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+        });
+      }
+
+      document.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-theme-toggle]");
+        if (!button) return;
+        var next = current() === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem("revizely-theme", next); } catch (error) { /* private mode */ }
+        paint();
+      });
+
+      paint();
+    })();
+  </script>
+</body>
+</html>
